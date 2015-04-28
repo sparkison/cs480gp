@@ -25,14 +25,14 @@ public class CFRecordReader extends RecordReader<FileLineWritable, Text>{
 	private LineReader reader;
 
 	public CFRecordReader(CombineFileSplit split, TaskAttemptContext context, Integer index) throws IOException{
-		this.path = split.getPath(index);
-		fs = this.path.getFileSystem(context.getConfiguration());
-		this.startOffset = split.getOffset(index);
-		this.end = startOffset + split.getLength(index);
+		path = split.getPath(index);
+		fs = path.getFileSystem(context.getConfiguration());
+		startOffset = split.getOffset(index);
+		end = startOffset + split.getLength(index);
 
 		fileIn = fs.open(path);
 		reader = new LineReader(fileIn);
-		this.pos = startOffset;
+		pos = startOffset;
 	}
 
 	@Override

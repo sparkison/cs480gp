@@ -58,7 +58,7 @@ public class FileCombiner extends Configured implements Tool{
 		job.setMapOutputValueClass(IntWritable.class);
 
 		job.setReducerClass(IntSumReducer.class);
-		job.setNumReduceTasks(13);
+		job.setNumReduceTasks(42);
 
 		FileOutputFormat.setOutputPath(job, outPath);
 		job.submit();
