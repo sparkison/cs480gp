@@ -13,13 +13,16 @@ import org.apache.hadoop.mapreduce.lib.input.CombineFileRecordReader;
 import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit;
 
 public class CFInputFormat extends CombineFileInputFormat<FileLineWritable, Text> {
+	
 	public CFInputFormat(){
 		super();
 		setMaxSplitSize(67108864); // 64 MB, default block size on hadoop
 	}
+	
 	public RecordReader<FileLineWritable, Text> createRecordReader(InputSplit split, TaskAttemptContext context) throws IOException{
 		return new CombineFileRecordReader<FileLineWritable, Text>((CombineFileSplit)split, context, CFRecordReader.class);
 	}
+	
 	@Override
 	protected boolean isSplitable(JobContext context, Path file){
 		/*
