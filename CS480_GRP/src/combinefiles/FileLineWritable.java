@@ -21,13 +21,14 @@ public class FileLineWritable implements WritableComparable<FileLineWritable>{
 		Text.writeString(out, fileName);
 	}
 
-	public int compareTo(FileLineWritable that) {
+	public int compareTo(FileLineWritable o) {
+		FileLineWritable that = (FileLineWritable)o;
 		// if filenames the same, return offset
-		int cmp = this.fileName.compareTo(that.fileName);
+		int compare = this.fileName.compareTo(that.fileName);
 		// else, return standard String compareTo result
-		if (cmp != 0) 
-			return cmp;
-		return (int)Math.signum((double)(this.offset - that.offset));
+		if (compare == 0) 
+			return (int)Math.signum((double)(this.offset - that.offset));
+		return compare;
 	}
 
 	@Override
