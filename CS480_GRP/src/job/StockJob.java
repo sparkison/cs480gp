@@ -5,6 +5,8 @@ import java.io.IOException;
 import map.StockMapper;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -12,9 +14,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-import partition.StockPartitioner;
 import reduce.StockReducer;
-
 
 public class StockJob {
 
@@ -49,7 +49,35 @@ public class StockJob {
 		if (fs.exists(outPath)) {
 			fs.delete(outPath, true);
 		}
-
+        
+        FileStatus[] inputPathFileList = fs.listStatus(inPath);
+		final int StockDocCount = inputPathFileList.length;
+		String[] fileNames = new String[StockDocCount];
+		String[] fileSize = new String[StockDocCount];
+		
+		for (int i = 0; i<StockDocCount; i++) {
+			// Get the filename
+			fileNames[i] = inputPathFileList[i].getPath().getName();
+			// Determine the length of the file
+			Path path = new Path(fileNames[i]);
+	        FileSystem hdfs = path.getFileSystem(conf);
+	        ContentSummary cSummary = hdfs.getContentSummary(path);
+	        // Write length to array
+	        Long size = new Long(cSummary.getLength());
+			fileSize[i] = size.toString();
+		}
+		/* Write the arrays to the configuration for easy retrieval
+		 * 
+		 * Get filename using: context.getConfiguration().getStrings("documentNames");
+		 * Get filesize using: context.getConfiguration().getStrings("documentSizes");
+		 * 
+		 * More info here: 
+		 * https://hadoop.apache.org/docs/r2.2.0/api/org/apache/hadoop/conf/Configuration.html#getStrings(java.lang.String)
+		 */
+		conf.setStrings("documentNames", fileNames);
+		conf.setStrings("documentSizes", fileSize);
+		
+		// Setup the job...
 		Job job = Job.getInstance(conf, "Stock analysis");
 		job.setJarByClass(StockJob.class);
 
