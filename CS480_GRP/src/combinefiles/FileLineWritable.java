@@ -21,6 +21,7 @@ public class FileLineWritable implements WritableComparable<FileLineWritable>{
 		Text.writeString(out, fileName);
 	}
 
+	@Override
 	public int compareTo(FileLineWritable that) {
 		// if filenames the same, return offset
 		int compare = this.fileName.compareTo(that.fileName);
