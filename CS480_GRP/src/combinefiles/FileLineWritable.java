@@ -24,7 +24,7 @@ public class FileLineWritable extends Configured implements Tool {
 	static final String usage = "Please use format: \"util.FileCombiner [input_path] [output_path] [number_of_files]\"";
 	
 	static class SequenceFileMapper extends
-	Mapper<NullWritable, BytesWritable, NullWritable, BytesWritable> {
+	Mapper<NullWritable, BytesWritable, Text, BytesWritable> {
 		private Text filename;
 
 		@Override
@@ -38,7 +38,7 @@ public class FileLineWritable extends Configured implements Tool {
 		@Override
 		protected void map(NullWritable key, BytesWritable value,
 				Context context) throws IOException, InterruptedException {
-			context.write(NullWritable.get(), value);
+			context.write(filename, value);
 		}
 	}
 
@@ -76,7 +76,7 @@ public class FileLineWritable extends Configured implements Tool {
 		FileInputFormat.setInputPaths(job, inPath);
 		FileOutputFormat.setOutputPath(job, outPath);
 
-		job.setOutputKeyClass(NullWritable.class);
+		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(BytesWritable.class);
 		job.setMapperClass(SequenceFileMapper.class);
 		
