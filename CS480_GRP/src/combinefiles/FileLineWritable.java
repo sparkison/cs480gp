@@ -17,7 +17,6 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
 
 public class FileLineWritable extends Configured implements Tool {
 	
@@ -60,7 +59,7 @@ public class FileLineWritable extends Configured implements Tool {
 		Path inPath = new Path(inputPath);
 		Path outPath = new Path(outputPath);
 
-		// Remove old output paths, if exist
+		// Remove old output path, if exist
 		if (fs.exists(outPath)) {
 			fs.delete(outPath, true);
 		}
@@ -83,8 +82,4 @@ public class FileLineWritable extends Configured implements Tool {
 		return job.waitForCompletion(true) ? 0 : 1;
 	}
 
-	public static void main(String[] args) throws Exception {
-		int exitCode = ToolRunner.run(new FileLineWritable(), args);
-		System.exit(exitCode);
-	}
 }
