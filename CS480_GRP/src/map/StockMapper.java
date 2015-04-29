@@ -1,12 +1,8 @@
 package map;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.util.StringTokenizer;
 
-import org.apache.hadoop.fs.ContentSummary;
-import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
@@ -14,15 +10,20 @@ import org.apache.hadoop.mapreduce.Mapper;
  * Output formats: 
  *
  */
-public class StockMapper extends Mapper<LongWritable, Text, Text, Text> {
+public class StockMapper extends Mapper<Text, BytesWritable, Text, Text> {
 
 	private static Text word = new Text();
 	private static Text output = new Text();
 
 	@Override
-	protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+	protected void map(Text key, BytesWritable value, Context context) throws IOException, InterruptedException {
 
-
+		// This is the text file(s) in this input split, probably not going to need this
+		System.out.println(key);
+		
+		// Get the value of the text file, this is what we're after
+		word.set(value.getBytes());
+		System.out.println(word.toString());
 
 	}// END map
 

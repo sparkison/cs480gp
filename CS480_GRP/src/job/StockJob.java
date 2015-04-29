@@ -1,84 +1,50 @@
 package job;
 
-import java.io.IOException;
-
 import map.StockMapper;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.ContentSummary;
-import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.util.Tool;
 
 import reduce.StockReducer;
 
-public class StockJob {
+public class StockJob extends Configured implements Tool {
 
-	private String inputPath;
-	private String outputPath;
-
-	public StockJob(String inputPath, String outputPath) {
-		this.inputPath = inputPath;
-		this.outputPath = outputPath;
-	}
-
-	public String getInputPath(){
-		return new String(inputPath);
-	}
-
-	public String getOutputPath(){
-		return new String(outputPath);
-	}
-
-	/*
-	 * This is the job for the Stock analysis
-	 */
-	public int start() throws IllegalArgumentException, IOException, ClassNotFoundException, InterruptedException{
-
+	static final String usage = "Please use format: \"util.StockDriver [input_path] [output_path]\"";
+	
+	@Override
+	public int run(String[] args) throws Exception {
+		
+		if (args.length < 2){
+			System.out.println(usage);
+			System.exit(1);
+		}
+		
+		String inputPath = args[0];
+		String outputPath = args[1];
+		
 		Configuration conf = new Configuration();
 		FileSystem fs = FileSystem.get(conf);
 
 		Path inPath = new Path(inputPath);
 		Path outPath = new Path(outputPath);
 
-		// Remove old output paths, if exist
+		// Remove old output path, if exist
 		if (fs.exists(outPath)) {
 			fs.delete(outPath, true);
 		}
-        
-        FileStatus[] inputPathFileList = fs.listStatus(inPath);
-		final int StockDocCount = inputPathFileList.length;
-		String[] fileNames = new String[StockDocCount];
-		String[] fileSize = new String[StockDocCount];
-		
-		for (int i = 0; i<StockDocCount; i++) {
-			// Get the filename
-			fileNames[i] = inputPathFileList[i].getPath().getName();
-			// Determine the length of the file
-			Path path = new Path(fileNames[i]);
-	        FileSystem hdfs = path.getFileSystem(conf);
-	        ContentSummary cSummary = hdfs.getContentSummary(path);
-	        // Write length to array
-	        Long size = new Long(cSummary.getLength());
-			fileSize[i] = size.toString();
-		}
-		/* Write the arrays to the configuration for easy retrieval
-		 * 
-		 * Get filename using: context.getConfiguration().getStrings("documentNames");
-		 * Get filesize using: context.getConfiguration().getStrings("documentSizes");
-		 * 
-		 * More info here: 
-		 * https://hadoop.apache.org/docs/r2.2.0/api/org/apache/hadoop/conf/Configuration.html#getStrings(java.lang.String)
-		 */
-		conf.setStrings("documentNames", fileNames);
-		conf.setStrings("documentSizes", fileSize);
 		
 		// Setup the job...
 		Job job = Job.getInstance(conf, "Stock analysis");
+		// Make sure input format set for SequenceFiles
+		job.setInputFormatClass(SequenceFileInputFormat.class);
 		job.setJarByClass(StockJob.class);
 
 		// Set Map, Partition, Combiner, and Reducer classes
@@ -99,10 +65,7 @@ public class StockJob {
 		FileOutputFormat.setOutputPath(job, outPath);
 
 		// Block for job to complete...
-		int status = job.waitForCompletion(true) ? 0 : 1;
-
-		return status;
-
+		return job.waitForCompletion(true) ? 0 : 1;
 	}
 
 }

@@ -1,4 +1,4 @@
-package combinefiles;
+package job;
 
 import java.io.IOException;
 
@@ -18,7 +18,9 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 
-public class FileLineWritable extends Configured implements Tool {
+import combinefiles.CFInputFormat;
+
+public class LineWritableJob extends Configured implements Tool {
 	
 	static final String usage = "Please use format: \"util.FileCombiner [input_path] [output_path] [number_of_files]\"";
 	
@@ -66,7 +68,7 @@ public class FileLineWritable extends Configured implements Tool {
 		
 		Job job = Job.getInstance(conf);
 		
-		job.setJarByClass(FileLineWritable.class);
+		job.setJarByClass(LineWritableJob.class);
 		job.setJobName("Combine small files");
 		job.setInputFormatClass(CFInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);

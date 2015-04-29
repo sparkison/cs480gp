@@ -1,9 +1,8 @@
-package util;
+package driver;
 
+import job.LineWritableJob;
 
 import org.apache.hadoop.util.ToolRunner;
-
-import combinefiles.FileLineWritable;
 
 public class FileCombiner{
 
@@ -14,7 +13,7 @@ public class FileCombiner{
 	 * args[2] = number of output files
 	 */
 	public static void main(String[] args) throws Exception {
-		int exitCode = ToolRunner.run(new FileLineWritable(), args);
+		int exitCode = ToolRunner.run(new LineWritableJob(), args);
 		System.exit(exitCode);
 	}
 

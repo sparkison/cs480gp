@@ -1,36 +1,19 @@
 package driver;
 
-import java.io.IOException;
+import org.apache.hadoop.util.ToolRunner;
 
 import job.StockJob;
 
 public class StockDriver {
 
-	public static void main(String args[]) {
-		
-		if(args.length < 2 || args == null) {
-			System.out.println("Incorrect number of arguments used.\nPlease use: \"util.StockDriver [input_path] [output_path]\"");
-			System.exit(1);
-		}
-		
-		String input = args[0];
-		String output = args[1];
-		int status = -1;
-		
-		// The census job runner
-		StockJob stockJob = new StockJob(input, output);
-		try {
-			/*
-			 * Start the MR task
-			 */
-			status = stockJob.start();
-		} catch (IllegalArgumentException | ClassNotFoundException
-				| IOException | InterruptedException e) {
-			System.out.println("Error starting Stock map reduce job: ");
-			e.printStackTrace();
-			System.exit(status);
-		}
-		
+	/**
+	 * Simple runner program
+	 * args[0] = input (the output directory from the 'FileCombiner' class)
+	 * args[1] = output
+	 */
+	public static void main(String args[]) throws Exception{
+		int exitCode = ToolRunner.run(new StockJob(), args);
+		System.exit(exitCode);
 	}
-	
+
 }
