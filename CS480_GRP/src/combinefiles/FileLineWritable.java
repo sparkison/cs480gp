@@ -1,61 +1,90 @@
 package combinefiles;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
-public class FileLineWritable implements WritableComparable<FileLineWritable>{
-	public long offset;
-	public String fileName;
+public class FileLineWritable extends Configured implements Tool {
+	
+	static final String usage = "Please use format: util.FileCombiner [input_path] [output_path] [number_of_files]";
+	
+	static class SequenceFileMapper extends
+	Mapper<NullWritable, BytesWritable, Text, BytesWritable> {
+		private Text filename;
 
-	public void readFields(DataInput in) throws IOException {
-		this.offset = in.readLong();
-		this.fileName = Text.readString(in);
-	}
+		@Override
+		protected void setup(Context context) throws IOException,
+		InterruptedException {
+			InputSplit split = context.getInputSplit();
+			Path path = ((FileSplit) split).getPath();
+			filename = new Text(path.toString());
+		}
 
-	public void write(DataOutput out) throws IOException {
-		out.writeLong(offset);
-		Text.writeString(out, fileName);
+		@Override
+		protected void map(NullWritable key, BytesWritable value,
+				Context context) throws IOException, InterruptedException {
+			context.write(filename, value);
+		}
 	}
 
 	@Override
-	public int compareTo(FileLineWritable that) {
-		// if filenames the same, return offset
-		int compare = this.fileName.compareTo(that.fileName);
-		// else, return standard String compareTo result
-		if (compare == 0) 
-			return (int)Math.signum((double)(this.offset - that.offset));
-		return compare;
+	public int run(String[] args) throws Exception {
+				
+		if (args.length < 3){
+			System.out.println(usage);
+			System.exit(1);
+		}
+		
+		String inputPath = args[0];
+		String outputPath = args[1];
+		int numFiles = Integer.parseInt(args[2]);
+
+		Configuration conf = new Configuration();
+		FileSystem fs = FileSystem.get(conf);
+
+		Path inPath = new Path(inputPath);
+		Path outPath = new Path(outputPath);
+
+		// Remove old output paths, if exist
+		if (fs.exists(outPath)) {
+			fs.delete(outPath, true);
+		}
+		
+		Job job = Job.getInstance(conf);
+		
+		job.setJarByClass(FileLineWritable.class);
+		job.setJobName("Combine small files");
+		job.setInputFormatClass(CFInputFormat.class);
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);
+		
+		job.setNumReduceTasks(numFiles);
+		FileInputFormat.setInputPaths(job, inPath);
+		FileOutputFormat.setOutputPath(job, outPath);
+
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(BytesWritable.class);
+		job.setMapperClass(SequenceFileMapper.class);
+		
+		return job.waitForCompletion(true) ? 0 : 1;
 	}
 
-	@Override
-	public int hashCode() {               // generated hashCode()
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((fileName == null) ? 0 : fileName.hashCode());
-		result = prime * result + (int) (offset ^ (offset >>> 32));
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {  // generated equals()
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		FileLineWritable other = (FileLineWritable) obj;
-		if (fileName == null) {
-			if (other.fileName != null)
-				return false;
-		} else if (!fileName.equals(other.fileName))
-			return false;
-		if (offset != other.offset)
-			return false;
-		return true;
+	public static void main(String[] args) throws Exception {
+		int exitCode = ToolRunner.run(new FileLineWritable(), args);
+		System.exit(exitCode);
 	}
 }

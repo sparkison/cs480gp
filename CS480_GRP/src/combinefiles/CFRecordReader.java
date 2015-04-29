@@ -2,88 +2,68 @@ package combinefiles;
 
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit;
-import org.apache.hadoop.util.LineReader;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
-public class CFRecordReader extends RecordReader<FileLineWritable, Text>{
-	private long startOffset;
-	private long end;
-	private long pos;
-	private FileSystem fs;
-	private Path path;
-	private FileLineWritable key;
-	private Text value;
+class CFRecordReader extends RecordReader<NullWritable, BytesWritable> {
+	private FileSplit fileSplit;
+	private Configuration conf;
+	private BytesWritable value = new BytesWritable();
+	private boolean processed = false;
 
-	private FSDataInputStream fileIn;
-	private LineReader reader;
-
-	public CFRecordReader(CombineFileSplit split, TaskAttemptContext context, Integer index) throws IOException{
-		path = split.getPath(index);
-		fs = path.getFileSystem(context.getConfiguration());
-		startOffset = split.getOffset(index);
-		end = startOffset + split.getLength(index);
-
-		fileIn = fs.open(path);
-		reader = new LineReader(fileIn);
-		pos = startOffset;
+	@Override
+	public void initialize(InputSplit split, TaskAttemptContext context)
+			throws IOException, InterruptedException {
+		this.fileSplit = (FileSplit) split;
+		this.conf = context.getConfiguration();
 	}
 
 	@Override
-	public void initialize(InputSplit arg0, TaskAttemptContext arg1) throws IOException, InterruptedException {
-		// Won't be called, use custom Constructor
-		// `CFRecordReader(CombineFileSplit split, TaskAttemptContext context, Integer index)`
-		// instead
-	}
-
-	@Override
-	public void close() throws IOException {}
-
-	@Override
-	public float getProgress() throws IOException{
-		if (startOffset == end) {
-			return 0;
+	public boolean nextKeyValue() throws IOException, InterruptedException {
+		if (!processed) {
+			byte[] contents = new byte[(int) fileSplit.getLength()];
+			Path file = fileSplit.getPath();
+			FileSystem fs = file.getFileSystem(conf);
+			FSDataInputStream in = null;
+			try {
+				in = fs.open(file);
+				IOUtils.readFully(in, contents, 0, contents.length);
+				value.set(contents, 0, contents.length);
+			} finally {
+				IOUtils.closeStream(in);
+			}
+			processed = true;
+			return true;
 		}
-		return Math.min(1.0f, (pos - startOffset) / (float) (end - startOffset));
+		return false;
 	}
 
 	@Override
-	public FileLineWritable getCurrentKey() throws IOException, InterruptedException {
-		return key;
+	public NullWritable getCurrentKey() throws IOException, InterruptedException {
+		return NullWritable.get();
 	}
 
 	@Override
-	public Text getCurrentValue() throws IOException, InterruptedException {
+	public BytesWritable getCurrentValue() throws IOException, InterruptedException {
 		return value;
 	}
 
 	@Override
-	public boolean nextKeyValue() throws IOException{
-		if (key == null) {
-			key = new FileLineWritable();
-			key.fileName = path.getName();
-		}
-		key.offset = pos;
-		if (value == null){
-			value = new Text();
-		}
-		int newSize = 0;
-		if (pos < end) {
-			newSize = reader.readLine(value);
-			pos += newSize;
-		}
-		if (newSize == 0) {
-			key = null;
-			value = null;
-			return false;
-		} else{
-			return true;
-		}
+	public float getProgress() throws IOException {
+		return processed ? 1.0f : 0.0f;
+	}
+
+	@Override
+	public void close() throws IOException {
+		// do nothing
 	}
 }
