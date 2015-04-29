@@ -284,5 +284,20 @@ public class DayStatsWritable implements Writable, Comparable<DayStatsWritable>{
 	public int compareTo(DayStatsWritable o) {
 		return this.date.compareTo(o.getDate());
 	}
+
+	@Override
+	public String toString() {
+		return "DayStatsWritable [ticker=" + ticker + ", date=" + date
+				+ ", open=" + open + ", high=" + high + ", low=" + low
+				+ ", close=" + close + ", volume=" + volume + ", adjClose="
+				+ adjClose + ", nValue=" + nValue + ", obv=" + obv + ", sma20="
+				+ sma20 + ", BBupper=" + BBupper + ", BBlower=" + BBlower
+				+ ", EMA12=" + EMA12 + ", EMA26=" + EMA26 + ", EMA50=" + EMA50
+				+ ", EMA75=" + EMA75 + ", EMA150=" + EMA150 + ", EMA200="
+				+ EMA200 + ", twentyHigh=" + twentyHigh + ", thirtyHigh="
+				+ thirtyHigh + ", fiftyFiveHigh=" + fiftyFiveHigh
+				+ ", twoFiftyHigh=" + twoFiftyHigh + ", tenLow=" + tenLow
+				+ ", twentyLow=" + twentyLow + ", thirtyLow=" + thirtyLow + "]";
+	}
     
 }
