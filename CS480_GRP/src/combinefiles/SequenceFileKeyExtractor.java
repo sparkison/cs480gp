@@ -26,7 +26,8 @@ public class SequenceFileKeyExtractor {
 		try {
 			reader = new SequenceFile.Reader(conf, Reader.file(path));
 			Text key = new Text();
-			while (reader.next(key)) { System.out.println(key);
+			while (reader.next(key)) { 
+				System.out.println(key);
 			}
 		} finally {
 			IOUtils.closeStream(reader);
