@@ -21,7 +21,7 @@ import org.apache.hadoop.util.ToolRunner;
 
 public class FileLineWritable extends Configured implements Tool {
 	
-	static final String usage = "Please use format: util.FileCombiner [input_path] [output_path] [number_of_files]";
+	static final String usage = "Please use format: \"util.FileCombiner [input_path] [output_path] [number_of_files]\"";
 	
 	static class SequenceFileMapper extends
 	Mapper<NullWritable, BytesWritable, NullWritable, BytesWritable> {
