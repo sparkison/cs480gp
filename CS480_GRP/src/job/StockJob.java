@@ -17,7 +17,7 @@ import reduce.StockReducer;
 
 public class StockJob extends Configured implements Tool {
 
-	static final String usage = "Please use format: \"util.StockDriver [input_path] [output_path]\"";
+	static final String usage = "Please use format: \"driver.StockDriver [input_path] [output_path]\"";
 	
 	@Override
 	public int run(String[] args) throws Exception {

@@ -22,7 +22,7 @@ import combinefiles.CFInputFormat;
 
 public class LineWritableJob extends Configured implements Tool {
 	
-	static final String usage = "Please use format: \"util.FileCombiner [input_path] [output_path] [number_of_files]\"";
+	static final String usage = "Please use format: \"driver.FileCombiner [input_path] [output_path] [number_of_files]\"";
 	
 	static class SequenceFileMapper extends
 	Mapper<NullWritable, BytesWritable, Text, BytesWritable> {
