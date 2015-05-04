@@ -11,176 +11,184 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public class DayStatsWritable implements Writable, Comparable<DayStatsWritable>{
-    
+
 
 	private Text ticker;
-    
-    private Text date;
-    
-    private DoubleWritable open;
-    private DoubleWritable high; 
-    private DoubleWritable low; 
-    private DoubleWritable close;
-    private LongWritable volume; 
-    private DoubleWritable adjClose; 
-    private DoubleWritable nValue; 
-    private LongWritable obv; 
-    
-    private DoubleWritable sma20; 
-    private DoubleWritable BBupper; 
-    private DoubleWritable BBlower; 
-    
-    private DoubleWritable EMA12;
-    private DoubleWritable EMA26; 
-    private DoubleWritable EMA50; 
-    private DoubleWritable EMA75; 
-    private DoubleWritable EMA150; 
-    private DoubleWritable EMA200; 
 
-    private DoubleWritable twentyHigh; 
-    private DoubleWritable thirtyHigh;
-    private DoubleWritable fiftyFiveHigh;
-    private DoubleWritable twoFiftyHigh; 
-    private DoubleWritable tenLow; 
-    private DoubleWritable twentyLow; 
-    private DoubleWritable thirtyLow;
-    
-    public DayStatsWritable(Text value) {
-        
-        String line = value.toString().trim(); 
-        if(line.endsWith(",")){
-        	line = line.substring(0, line.length()-2);
-        }
-        String[] parsed = line.trim().split(","); 
-        
-        this.ticker = new Text(parsed[0].trim()); 
-        this.date = new Text(parsed[1].trim()); 
-        
-        this.open = new DoubleWritable(Double.parseDouble(parsed[2].trim()));
-        this.high = new DoubleWritable(Double.parseDouble(parsed[3].trim()));
-        this.low = new DoubleWritable(Double.parseDouble(parsed[4].trim())); 
-        this.close = new DoubleWritable(Double.parseDouble(parsed[5].trim()));
-        this.volume = new LongWritable(Long.parseLong(parsed[6].trim())); 
-        this.adjClose = new DoubleWritable(Double.parseDouble(parsed[7].trim())); 
-        this.nValue = new DoubleWritable(Double.parseDouble(parsed[8].trim()));; 
-        this.obv = new LongWritable(Long.parseLong(parsed[9].trim())); 
-        
-        this.sma20 = new DoubleWritable(Double.parseDouble(parsed[10].trim())); 
-        this.BBupper = new DoubleWritable(Double.parseDouble(parsed[11].trim())); 
-        this.BBlower = new DoubleWritable(Double.parseDouble(parsed[12].trim())); 
-        
-        this.EMA12 = new DoubleWritable(Double.parseDouble(parsed[13].trim()));
-        this.EMA26 = new DoubleWritable(Double.parseDouble(parsed[14].trim())); 
-        this.EMA50 = new DoubleWritable(Double.parseDouble(parsed[15].trim())); 
-        this.EMA75 = new DoubleWritable(Double.parseDouble(parsed[16].trim())); 
-        this.EMA150 = new DoubleWritable(Double.parseDouble(parsed[17].trim())); 
-        this.EMA200 = new DoubleWritable(Double.parseDouble(parsed[18].trim())); 
+	private Text date;
 
-        this.twentyHigh = new DoubleWritable(Double.parseDouble(parsed[19].trim())); 
-        this.thirtyHigh = new DoubleWritable(Double.parseDouble(parsed[20].trim()));
-        this.fiftyFiveHigh = new DoubleWritable(Double.parseDouble(parsed[21].trim()));
-        this.twoFiftyHigh = new DoubleWritable(Double.parseDouble(parsed[22].trim())); 
-        this.tenLow = new DoubleWritable(Double.parseDouble(parsed[23].trim())); 
-        this.twentyLow = new DoubleWritable(Double.parseDouble(parsed[24].trim())); 
-        this.thirtyLow = new DoubleWritable(Double.parseDouble(parsed[25].trim())); 
-    }
-    
-    public DayStatsWritable() {
-        this.ticker = new Text(); 
-        this.date = new Text(); 
-        this.open = new DoubleWritable(); 
-        this.high = new DoubleWritable();
-        this.low = new DoubleWritable();
-        this.close = new DoubleWritable();
-        this.volume = new LongWritable();
-        this.adjClose = new DoubleWritable();
-        this.nValue = new DoubleWritable();
-        this.obv = new LongWritable();
-        
-        this.sma20 = new DoubleWritable();
-        this.BBupper = new DoubleWritable();
-        this.BBlower  = new DoubleWritable();
-        
-        this.EMA12 = new DoubleWritable();
-        this.EMA26 = new DoubleWritable();
-        this.EMA50 = new DoubleWritable();
-        this.EMA75  = new DoubleWritable();
-        this.EMA150  = new DoubleWritable();
-        this.EMA200 = new DoubleWritable();
+	private DoubleWritable open;
+	private DoubleWritable high; 
+	private DoubleWritable low; 
+	private DoubleWritable close;
+	private LongWritable volume; 
+	private DoubleWritable adjClose; 
+	private DoubleWritable nValue; 
+	private LongWritable obv; 
 
-        this.twentyHigh = new DoubleWritable();
-        this.thirtyHigh = new DoubleWritable();
-        this.fiftyFiveHigh = new DoubleWritable();
-        this.twoFiftyHigh = new DoubleWritable();
-        this.tenLow = new DoubleWritable();
-        this.twentyLow  = new DoubleWritable();
-        this.thirtyLow = new DoubleWritable();
-    }
-    
-    @Override
-    public void write(DataOutput dataOutput) throws IOException {
-    	ticker.write(dataOutput);
-        date.write(dataOutput);
-        open.write(dataOutput);
-        high.write(dataOutput);
-        low.write(dataOutput);
-        close.write(dataOutput);
-        volume.write(dataOutput);
-        adjClose.write(dataOutput);
-        nValue.write(dataOutput);
-        obv.write(dataOutput);
-        sma20.write(dataOutput);
-        BBupper.write(dataOutput);
-        BBlower.write(dataOutput);
-        EMA12.write(dataOutput);
-        EMA26.write(dataOutput);
-        EMA50.write(dataOutput);
-        EMA75.write(dataOutput);
-        EMA150.write(dataOutput);
-        EMA200.write(dataOutput);
-        twentyHigh.write(dataOutput);
-        thirtyHigh.write(dataOutput);
-        fiftyFiveHigh.write(dataOutput);
-        twoFiftyHigh.write(dataOutput);
-        tenLow.write(dataOutput);
-        twentyLow.write(dataOutput);
-        thirtyLow.write(dataOutput);
-    }
-    
-    @Override
-    public void readFields(DataInput dataInput) throws IOException {
-    	ticker.readFields(dataInput);
-        date.readFields(dataInput);
-        open.readFields(dataInput);
-        high.readFields(dataInput);
-        low.readFields(dataInput);
-        close.readFields(dataInput);
-        volume.readFields(dataInput);
-        adjClose.readFields(dataInput);
-        nValue.readFields(dataInput);
-        obv.readFields(dataInput);
-        sma20.readFields(dataInput);
-        BBupper.readFields(dataInput);
-        BBlower.readFields(dataInput);
-        EMA12.readFields(dataInput);
-        EMA26.readFields(dataInput);
-        EMA50.readFields(dataInput);
-        EMA75.readFields(dataInput);
-        EMA150.readFields(dataInput);
-        EMA200.readFields(dataInput);
-        twentyHigh.readFields(dataInput);
-        thirtyHigh.readFields(dataInput);
-        fiftyFiveHigh.readFields(dataInput);
-        twoFiftyHigh.readFields(dataInput);
-        tenLow.readFields(dataInput);
-        twentyLow.readFields(dataInput);
-        thirtyLow.readFields(dataInput);
-    }
-    
-    public Text getTicker() {return ticker;}
-    
-    public void setTicker(Text ticker) {this.ticker = ticker;}
-    
+	private DoubleWritable sma20; 
+	private DoubleWritable BBupper; 
+	private DoubleWritable BBlower; 
+
+	private DoubleWritable EMA12;
+	private DoubleWritable EMA26; 
+	private DoubleWritable EMA50; 
+	private DoubleWritable EMA75; 
+	private DoubleWritable EMA150; 
+	private DoubleWritable EMA200; 
+
+	private DoubleWritable twentyHigh; 
+	private DoubleWritable thirtyHigh;
+	private DoubleWritable fiftyFiveHigh;
+	private DoubleWritable twoFiftyHigh; 
+	private DoubleWritable tenLow; 
+	private DoubleWritable twentyLow; 
+	private DoubleWritable thirtyLow;
+
+	public DayStatsWritable(Text value) {
+
+		if (value.toString().trim().equals("")) {
+			System.out.println("\n\n*************************************************************\n\n");
+			return;
+		}
+		    	System.out.println(value.toString());
+
+		String line = value.toString().trim(); 
+		if(line.endsWith(",")){
+			line = line.substring(0, line.length()-2);
+		}
+
+		String[] parsed = line.trim().split(",");
+
+
+		this.ticker = new Text(parsed[0].trim()); 
+		this.date = new Text(parsed[1].trim()); 
+
+		this.open = new DoubleWritable(Double.parseDouble(parsed[2].trim()));
+		this.high = new DoubleWritable(Double.parseDouble(parsed[3].trim()));
+		this.low = new DoubleWritable(Double.parseDouble(parsed[4].trim())); 
+		this.close = new DoubleWritable(Double.parseDouble(parsed[5].trim()));
+		this.volume = new LongWritable(Long.parseLong(parsed[6].trim())); 
+		this.adjClose = new DoubleWritable(Double.parseDouble(parsed[7].trim())); 
+		this.nValue = new DoubleWritable(Double.parseDouble(parsed[8].trim()));; 
+		this.obv = new LongWritable(Long.parseLong(parsed[9].trim())); 
+
+		this.sma20 = new DoubleWritable(Double.parseDouble(parsed[10].trim())); 
+		this.BBupper = new DoubleWritable(Double.parseDouble(parsed[11].trim())); 
+		this.BBlower = new DoubleWritable(Double.parseDouble(parsed[12].trim())); 
+
+		this.EMA12 = new DoubleWritable(Double.parseDouble(parsed[13].trim()));
+		this.EMA26 = new DoubleWritable(Double.parseDouble(parsed[14].trim())); 
+		this.EMA50 = new DoubleWritable(Double.parseDouble(parsed[15].trim())); 
+		this.EMA75 = new DoubleWritable(Double.parseDouble(parsed[16].trim())); 
+		this.EMA150 = new DoubleWritable(Double.parseDouble(parsed[17].trim())); 
+		this.EMA200 = new DoubleWritable(Double.parseDouble(parsed[18].trim())); 
+
+		this.twentyHigh = new DoubleWritable(Double.parseDouble(parsed[19].trim())); 
+		this.thirtyHigh = new DoubleWritable(Double.parseDouble(parsed[20].trim()));
+		this.fiftyFiveHigh = new DoubleWritable(Double.parseDouble(parsed[21].trim()));
+		this.twoFiftyHigh = new DoubleWritable(Double.parseDouble(parsed[22].trim())); 
+		this.tenLow = new DoubleWritable(Double.parseDouble(parsed[23].trim())); 
+		this.twentyLow = new DoubleWritable(Double.parseDouble(parsed[24].trim())); 
+		this.thirtyLow = new DoubleWritable(Double.parseDouble(parsed[25].trim())); 
+	}
+
+	public DayStatsWritable() {
+		this.ticker = new Text(); 
+		this.date = new Text(); 
+		this.open = new DoubleWritable(); 
+		this.high = new DoubleWritable();
+		this.low = new DoubleWritable();
+		this.close = new DoubleWritable();
+		this.volume = new LongWritable();
+		this.adjClose = new DoubleWritable();
+		this.nValue = new DoubleWritable();
+		this.obv = new LongWritable();
+
+		this.sma20 = new DoubleWritable();
+		this.BBupper = new DoubleWritable();
+		this.BBlower  = new DoubleWritable();
+
+		this.EMA12 = new DoubleWritable();
+		this.EMA26 = new DoubleWritable();
+		this.EMA50 = new DoubleWritable();
+		this.EMA75  = new DoubleWritable();
+		this.EMA150  = new DoubleWritable();
+		this.EMA200 = new DoubleWritable();
+
+		this.twentyHigh = new DoubleWritable();
+		this.thirtyHigh = new DoubleWritable();
+		this.fiftyFiveHigh = new DoubleWritable();
+		this.twoFiftyHigh = new DoubleWritable();
+		this.tenLow = new DoubleWritable();
+		this.twentyLow  = new DoubleWritable();
+		this.thirtyLow = new DoubleWritable();
+	}
+
+	@Override
+	public void write(DataOutput dataOutput) throws IOException {
+		ticker.write(dataOutput);
+		date.write(dataOutput);
+		open.write(dataOutput);
+		high.write(dataOutput);
+		low.write(dataOutput);
+		close.write(dataOutput);
+		volume.write(dataOutput);
+		adjClose.write(dataOutput);
+		nValue.write(dataOutput);
+		obv.write(dataOutput);
+		sma20.write(dataOutput);
+		BBupper.write(dataOutput);
+		BBlower.write(dataOutput);
+		EMA12.write(dataOutput);
+		EMA26.write(dataOutput);
+		EMA50.write(dataOutput);
+		EMA75.write(dataOutput);
+		EMA150.write(dataOutput);
+		EMA200.write(dataOutput);
+		twentyHigh.write(dataOutput);
+		thirtyHigh.write(dataOutput);
+		fiftyFiveHigh.write(dataOutput);
+		twoFiftyHigh.write(dataOutput);
+		tenLow.write(dataOutput);
+		twentyLow.write(dataOutput);
+		thirtyLow.write(dataOutput);
+	}
+
+	@Override
+	public void readFields(DataInput dataInput) throws IOException {
+		ticker.readFields(dataInput);
+		date.readFields(dataInput);
+		open.readFields(dataInput);
+		high.readFields(dataInput);
+		low.readFields(dataInput);
+		close.readFields(dataInput);
+		volume.readFields(dataInput);
+		adjClose.readFields(dataInput);
+		nValue.readFields(dataInput);
+		obv.readFields(dataInput);
+		sma20.readFields(dataInput);
+		BBupper.readFields(dataInput);
+		BBlower.readFields(dataInput);
+		EMA12.readFields(dataInput);
+		EMA26.readFields(dataInput);
+		EMA50.readFields(dataInput);
+		EMA75.readFields(dataInput);
+		EMA150.readFields(dataInput);
+		EMA200.readFields(dataInput);
+		twentyHigh.readFields(dataInput);
+		thirtyHigh.readFields(dataInput);
+		fiftyFiveHigh.readFields(dataInput);
+		twoFiftyHigh.readFields(dataInput);
+		tenLow.readFields(dataInput);
+		twentyLow.readFields(dataInput);
+		thirtyLow.readFields(dataInput);
+	}
+
+	public Text getTicker() {return ticker;}
+
+	public void setTicker(Text ticker) {this.ticker = ticker;}
+
 	public Text getDate() {return date;}
 
 	public void setDate(Text date) {this.date = date;}
@@ -285,36 +293,36 @@ public class DayStatsWritable implements Writable, Comparable<DayStatsWritable>{
 	public int compareTo(DayStatsWritable o) {
 		return this.date.compareTo(o.getDate());
 	}
-	
+
 	public String toString(){
 		String stringer = ""; 
-    	stringer = stringer + ticker.toString()+"\t";
-    	stringer = stringer + date.toString()+"\t";
-    	stringer = stringer + open.get()+"\t";
-    	stringer = stringer + high.get()+"\t";
-    	stringer = stringer + low.get()+"\t";
-    	stringer = stringer +  close.get()+"\t";
-    	stringer = stringer + volume.get()+"\t";
-    	stringer = stringer + adjClose.get()+"\t";
-    	stringer = stringer + nValue.get()+"\t";
-    	stringer = stringer + obv.get()+"\t";
-    	stringer = stringer + sma20.get()+"\t";
-    	stringer = stringer + BBupper.get()+"\t";
-    	stringer = stringer + BBlower.get()+"\t";
-    	stringer = stringer +  EMA12.get()+"\t";
-    	stringer = stringer + EMA26.get()+"\t";
-    	stringer = stringer + EMA50.get()+"\t";
-    	stringer = stringer + EMA75.get()+"\t";
-    	stringer = stringer + EMA150.get()+"\t";
-    	stringer = stringer + EMA200.get()+"\t";
-    	stringer = stringer + twentyHigh.get()+"\t";
-    	stringer = stringer + thirtyHigh.get()+"\t";
-    	stringer = stringer + fiftyFiveHigh.get()+"\t";
-    	stringer = stringer + twoFiftyHigh.get()+"\t";
-    	stringer = stringer + tenLow.get()+"\t";
-    	stringer = stringer + twentyLow.get()+"\t";
-    	stringer = stringer + thirtyLow.get();
+		stringer = stringer + ticker.toString()+"\t";
+		stringer = stringer + date.toString()+"\t";
+		stringer = stringer + open.get()+"\t";
+		stringer = stringer + high.get()+"\t";
+		stringer = stringer + low.get()+"\t";
+		stringer = stringer +  close.get()+"\t";
+		stringer = stringer + volume.get()+"\t";
+		stringer = stringer + adjClose.get()+"\t";
+		stringer = stringer + nValue.get()+"\t";
+		stringer = stringer + obv.get()+"\t";
+		stringer = stringer + sma20.get()+"\t";
+		stringer = stringer + BBupper.get()+"\t";
+		stringer = stringer + BBlower.get()+"\t";
+		stringer = stringer +  EMA12.get()+"\t";
+		stringer = stringer + EMA26.get()+"\t";
+		stringer = stringer + EMA50.get()+"\t";
+		stringer = stringer + EMA75.get()+"\t";
+		stringer = stringer + EMA150.get()+"\t";
+		stringer = stringer + EMA200.get()+"\t";
+		stringer = stringer + twentyHigh.get()+"\t";
+		stringer = stringer + thirtyHigh.get()+"\t";
+		stringer = stringer + fiftyFiveHigh.get()+"\t";
+		stringer = stringer + twoFiftyHigh.get()+"\t";
+		stringer = stringer + tenLow.get()+"\t";
+		stringer = stringer + twentyLow.get()+"\t";
+		stringer = stringer + thirtyLow.get();
 		return stringer; 
 	}
-    
+
 }

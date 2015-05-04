@@ -37,9 +37,27 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 public class StockRunner {
 
 	public static void main(String[] args) throws Exception {
+
+		String inputPath = args[0];
+		String outputPath = args[1];
 		
+		Configuration conf = new Configuration();
+		FileSystem fs = FileSystem.get(conf);
+
+		Path inPath = new Path(inputPath);
+		Path outPath = new Path(outputPath);
 		
-		Configuration conf = new Configuration(); 
+		Path hiLowOut = new Path(outPath.getName()+"hiLow");
+		Path emaOut = new Path(outPath.getName()+"emas");
+
+		// Remove old output path, if exist
+		if (fs.exists(hiLowOut)) {
+			fs.delete(hiLowOut, true);
+		}
+		if (fs.exists(emaOut)) {
+			fs.delete(emaOut, true);
+		}
+		
 		Job job = Job.getInstance(conf, "Hi/Lows");
 		
 		// Make sure input format set for SequenceFiles
@@ -56,8 +74,8 @@ public class StockRunner {
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 		
-		FileInputFormat.addInputPath(job, new Path(args[0]));
-		FileOutputFormat.setOutputPath(job, new Path(args[1]+"hiLows"));
+		FileInputFormat.addInputPath(job, inPath);
+		FileOutputFormat.setOutputPath(job, hiLowOut);
 		
 		job.waitForCompletion(true); 
 		
@@ -78,8 +96,8 @@ public class StockRunner {
 		job2.setOutputKeyClass(Text.class);
 		job2.setOutputValueClass(Text.class);
 		
-		FileInputFormat.addInputPath(job2, new Path(args[0]));
-		FileOutputFormat.setOutputPath(job2, new Path(args[1]+"emas"));
+		FileInputFormat.addInputPath(job2, inPath);
+		FileOutputFormat.setOutputPath(job2, emaOut);
 		
 		job2.waitForCompletion(true); 
 		

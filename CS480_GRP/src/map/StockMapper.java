@@ -7,7 +7,7 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import util.DayStatsWritable;
+import analysis.DayStatsWritable;
 
 /*
  * Output formats: 
@@ -29,7 +29,13 @@ public class StockMapper extends Mapper<Text, BytesWritable, Text, Text> {
 		line.set(value.getBytes());
 		StringTokenizer token = new StringTokenizer(line.toString(), "\n");
 		while (token.hasMoreTokens()) {
+			try{
 			day = new DayStatsWritable(new Text(token.nextToken()));
+			}catch(Exception e){
+				e.printStackTrace();
+				
+				System.exit(0);
+			}
 			System.out.println(day.toString());
 		}
 		
