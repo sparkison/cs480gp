@@ -58,26 +58,26 @@ public class StockRunner {
 			fs.delete(emaOut, true);
 		}
 		
-		Job job = Job.getInstance(conf, "Hi/Lows");
-		
-		// Make sure input format set for SequenceFiles
-		job.setInputFormatClass(SequenceFileInputFormat.class);
-		
-		job.setJarByClass(StockRunner.class);
-		
-		job.setMapperClass(HiLowMapper.class);
-		
-		job.setReducerClass(HiLowReducer.class);
-		
-		job.setMapOutputKeyClass(Text.class);
-		job.setMapOutputValueClass(DayStatsWritable.class);
-		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(Text.class);
-		
-		FileInputFormat.addInputPath(job, inPath);
-		FileOutputFormat.setOutputPath(job, hiLowOut);
-		
-		job.waitForCompletion(true); 
+//		Job job = Job.getInstance(conf, "Hi/Lows");
+//		
+//		// Make sure input format set for SequenceFiles
+//		job.setInputFormatClass(SequenceFileInputFormat.class);
+//		
+//		job.setJarByClass(StockRunner.class);
+//		
+//		job.setMapperClass(HiLowMapper.class);
+//		
+//		job.setReducerClass(HiLowReducer.class);
+//		
+//		job.setMapOutputKeyClass(Text.class);
+//		job.setMapOutputValueClass(DayStatsWritable.class);
+//		job.setOutputKeyClass(Text.class);
+//		job.setOutputValueClass(Text.class);
+//		
+//		FileInputFormat.addInputPath(job, inPath);
+//		FileOutputFormat.setOutputPath(job, hiLowOut);
+//		
+//		job.waitForCompletion(true); 
 		
 		Configuration conf2 = new Configuration(); 
 		Job job2 = Job.getInstance(conf2, "EMAs");
