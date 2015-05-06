@@ -1,11 +1,13 @@
-package reduce;
+package reduce; 
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Reducer.Context;
 
 import writable.DayStatsWritable;
 
@@ -161,7 +163,7 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 		
 		for(String r: results.keySet()){
 				
-			int posIndex = Integer.parseInt(r.substring(3, r.indexOf(":")).trim());
+			int posIndex = Integer.parseInt(r.substring(5, r.indexOf(":")).trim());
 			if(!lineBuilder[posIndex].equals("")){
 				exitPosition(0,0,0,posIndex,context); 
 			}
@@ -190,7 +192,7 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 		if(Math.abs(thisLong) == 99999.99) return;
 		if(Math.abs(prevLong) == 99999.99) return; 
 		
-		newKey.set(shortEMA+""+longEMA+""+nVal+""+trueIndex+":"+ticker);
+		newKey.set("EM"+shortEMA+""+longEMA+""+nVal+""+trueIndex+":"+ticker);
 //		String hashKey = shortEMA+""+longEMA+""+nVal+""+posIndex+":"+ticker;
 		
 		if(!results.containsKey(newKey.toString())){
@@ -269,7 +271,7 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 //		ArrayList<String> a = results.get(newKey.toString());
 //		a.add(valout.toString()); 
 //		results.put(newKey.toString(), a); 
-		lineBuilder[posIndex] = date+"\t"+startCapital[posIndex]+"\tBUY\t"+entryPrice[posIndex]+"\t"+shares[posIndex]+"\t"+
+		lineBuilder[posIndex] = date+"\t"+startCapital[posIndex]+"\t"+entryPrice[posIndex]+"\t"+shares[posIndex]+"\t"+
 				nVals[nVal]+"\t"+stopPrice[posIndex]+"\t";
 		
 //		try {
@@ -326,7 +328,7 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 		realizedGains[posIndex] = exitCapital[posIndex] - entryCapital[posIndex]; 
 		startCapital[posIndex] = startCapital[posIndex] + realizedGains[posIndex]; 
 		
-		double percentGain = ((exitCapital[posIndex]/entryCapital[posIndex]) - 1.0) * 100.00;
+		double percentGain = ((exitPrice[posIndex]/entryPrice[posIndex]) - 1.0) * 100.00;
 		
 		lineBuilder[posIndex] += ("STOP\t"+date+"\t"+exitPrice[posIndex]+"\t"+realizedGains[posIndex]+"\t"+percentGain+"\t"+startCapital[posIndex]);
 		

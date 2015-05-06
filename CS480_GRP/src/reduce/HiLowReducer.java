@@ -1,4 +1,4 @@
-package reduce;
+package reduce; 
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Reducer.Context;
 
 import writable.DayStatsWritable;
 
@@ -15,7 +16,6 @@ public class HiLowReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 	private String date;
 	private String ticker; 
 	private Text newKey = new Text(); 
-	@SuppressWarnings("unused")
 	private Text valout = new Text(); 
 	
 	private final double startCapitalDefault = 5000.00; 
@@ -53,7 +53,6 @@ public class HiLowReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 	private final int HiLow_30_20 = 4; 
 	private final int HiLow_55_20 = 5; 
 	private final int HiLow_250_20 = 6; 
-	@SuppressWarnings("unused")
 	private final int HiLow_55_30 = 7;
 	private final int HiLow_250_30 = 8; 
 
@@ -177,7 +176,7 @@ public class HiLowReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 		if(Math.abs(thisHi) == 99999.99) return;
 		if(Math.abs(thisLow) == 99999.99) return; 
 		
-		newKey.set("HL"+entryHi+""+exitLow+""+nVal+""+HiLowIndex+":"+ticker);
+		newKey.set("HL"+entryHi+""+exitLow+""+nVal+""+trueIndex+":"+ticker);
 		
 		if(!results.containsKey(newKey.toString())){
 			ArrayList<String> a = new ArrayList<String>(); 
@@ -259,7 +258,7 @@ public class HiLowReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 		realizedGains[trueIndex] = exitCapital[trueIndex] - entryCapital[trueIndex]; 
 		startCapital[trueIndex] = startCapital[trueIndex] + realizedGains[trueIndex]; 
 		
-		double percentGain = (exitCapital[trueIndex] / entryCapital[trueIndex] - 1.0) * 100.00; 
+		double percentGain = (exitPrice[trueIndex] / entryPrice[trueIndex] - 1.0) * 100.00; 
 		
 		lineBuilder[trueIndex] += (action+"\t"+date+"\t"+exitPrice[trueIndex]+"\t"+
 				realizedGains[trueIndex]+"\t"+percentGain+"\t"+startCapital[trueIndex]); 

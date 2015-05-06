@@ -10,6 +10,7 @@ package job;
 
 import map.EMAMapper;
 import map.HiLowMapper;
+import map.HybridMapper;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -24,7 +25,9 @@ import org.apache.hadoop.util.Tool;
 
 import reduce.EMAReducer;
 import reduce.HiLowReducer;
+import reduce.HybridReducer; 
 import writable.DayStatsWritable;
+
 
 public class StockJob extends Configured implements Tool {
 	
@@ -49,6 +52,7 @@ public class StockJob extends Configured implements Tool {
 		
 		Path hiLowOut = new Path(outPath.getName()+"_hiLow");
 		Path emaOut = new Path(outPath.getName()+"_emas");
+		Path hybridOut = new Path(outPath.getName()+"_hybrid");
 
 		// Remove old output path, if exist
 		if (fs.exists(hiLowOut)) {
@@ -56,6 +60,9 @@ public class StockJob extends Configured implements Tool {
 		}
 		if (fs.exists(emaOut)) {
 			fs.delete(emaOut, true);
+		}
+		if (fs.exists(hybridOut)) {
+			fs.delete(hybridOut, true);
 		}
 		
 		Job job = Job.getInstance(conf, "Hi/Lows");
@@ -99,7 +106,29 @@ public class StockJob extends Configured implements Tool {
 		FileInputFormat.addInputPath(job2, inPath);
 		FileOutputFormat.setOutputPath(job2, emaOut);
 		
-		return job2.waitForCompletion(true) ? 0 : 1;
+		job2.waitForCompletion(true);
+
+		Configuration conf3 = new Configuration(); 
+		Job job3 = Job.getInstance(conf3, "HYBRID");
+		
+		// Make sure input format set for SequenceFiles
+		job3.setInputFormatClass(SequenceFileInputFormat.class);
+		
+		job3.setJarByClass(StockJob.class);
+		
+		job3.setMapperClass(HybridMapper.class);
+		
+		job3.setReducerClass(HybridReducer.class);
+		
+		job3.setMapOutputKeyClass(Text.class);
+		job3.setMapOutputValueClass(DayStatsWritable.class);
+		job3.setOutputKeyClass(Text.class);
+		job3.setOutputValueClass(Text.class);
+		
+		FileInputFormat.addInputPath(job3, inPath);
+		FileOutputFormat.setOutputPath(job3, hybridOut);
+		
+		return job3.waitForCompletion(true) ? 0 : 1; 
 		
 	}
 }
