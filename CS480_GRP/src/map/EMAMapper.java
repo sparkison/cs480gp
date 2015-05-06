@@ -3,19 +3,14 @@ package map;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.StringTokenizer;
 
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Mapper.Context;
 
 import writable.DayStatsWritable;
 
 public class EMAMapper extends Mapper<Object, Text, Text, DayStatsWritable>{
 
-	private static Text line = new Text();
 	private static Text mapkey = new Text();
 
 	public void map(Object key, Text value, Context context) throws IOException, InterruptedException {

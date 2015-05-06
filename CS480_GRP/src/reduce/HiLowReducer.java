@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Reducer.Context;
 
 import writable.DayStatsWritable;
 
@@ -16,6 +15,7 @@ public class HiLowReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 	private String date;
 	private String ticker; 
 	private Text newKey = new Text(); 
+	@SuppressWarnings("unused")
 	private Text valout = new Text(); 
 	
 	private final double startCapitalDefault = 5000.00; 
@@ -53,6 +53,7 @@ public class HiLowReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 	private final int HiLow_30_20 = 4; 
 	private final int HiLow_55_20 = 5; 
 	private final int HiLow_250_20 = 6; 
+	@SuppressWarnings("unused")
 	private final int HiLow_55_30 = 7;
 	private final int HiLow_250_30 = 8; 
 

@@ -1,7 +1,6 @@
 package writable;
 
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -47,18 +46,12 @@ public class DayStatsWritable implements Writable, Comparable<DayStatsWritable>{
 
 	public DayStatsWritable(Text value) throws Exception{
 
-//		if (value.toString().trim().equals("")) {
-//			// System.out.println("\n******************************\n RECEIVED EMPTY STRING \n******************************\n");
-//			return;
-//		}
-
 		String line = value.toString().trim(); 
 		if(line.endsWith(",")){
 			line = line.substring(0, line.length()-2);
 		}
 
 		String[] parsed = line.trim().split(",");
-
 
 		this.ticker = new Text(parsed[0].trim()); 
 		this.date = new Text(parsed[1].trim()); 
