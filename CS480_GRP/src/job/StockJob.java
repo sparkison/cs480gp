@@ -1,4 +1,4 @@
-package driver;
+package job;
 
 /*
  * Author: Daniel Sullivan
@@ -24,6 +24,7 @@ import map.EMAMapper;
 import map.HiLowMapper;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -36,14 +37,23 @@ import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.util.Tool;
 
 import reduce.EMAReducer;
 import reduce.HiLowReducer;
 import writable.DayStatsWritable;
 
-public class StockRunner {
+public class StockJob extends Configured implements Tool {
+	
+	static final String usage = "Please use format: \"driver.StockJob [input_path] [output_path]\"";
 
-	public static void main(String[] args) throws Exception {
+	@Override
+	public int run(String[] args) throws Exception {
+				
+		if (args.length < 2){
+			System.out.println(usage);
+			System.exit(1);
+		}
 
 		String inputPath = args[0];
 		String outputPath = args[1];
@@ -70,7 +80,7 @@ public class StockRunner {
 		// Make sure input format set for SequenceFiles
 		job.setInputFormatClass(SequenceFileInputFormat.class);
 		
-		job.setJarByClass(StockRunner.class);
+		job.setJarByClass(StockJob.class);
 		
 		job.setMapperClass(HiLowMapper.class);
 		
@@ -92,7 +102,7 @@ public class StockRunner {
 		// Make sure input format set for SequenceFiles
 		job2.setInputFormatClass(SequenceFileInputFormat.class);
 		
-		job2.setJarByClass(StockRunner.class);
+		job2.setJarByClass(StockJob.class);
 		
 		job2.setMapperClass(EMAMapper.class);
 		
@@ -106,7 +116,7 @@ public class StockRunner {
 		FileInputFormat.addInputPath(job2, inPath);
 		FileOutputFormat.setOutputPath(job2, emaOut);
 		
-		job2.waitForCompletion(true); 
+		return job2.waitForCompletion(true) ? 0 : 1;
 		
 	}
 }

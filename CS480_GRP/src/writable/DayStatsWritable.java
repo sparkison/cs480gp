@@ -47,10 +47,10 @@ public class DayStatsWritable implements Writable, Comparable<DayStatsWritable>{
 
 	public DayStatsWritable(Text value) throws Exception{
 
-		if (value.toString().trim().equals("")) {
-			// System.out.println("\n******************************\n RECEIVED EMPTY STRING \n******************************\n");
-			return;
-		}
+//		if (value.toString().trim().equals("")) {
+//			// System.out.println("\n******************************\n RECEIVED EMPTY STRING \n******************************\n");
+//			return;
+//		}
 
 		String line = value.toString().trim(); 
 		if(line.endsWith(",")){
