@@ -25,7 +25,7 @@ public class LineWritableJob extends Configured implements Tool {
 	static final String usage = "Please use format: \"driver.FileCombiner [input_path] [output_path] [number_of_files]\"";
 	
 	static class SequenceFileMapper extends
-	Mapper<NullWritable, BytesWritable, Text, BytesWritable> {
+	Mapper<NullWritable, Text, Text, Text> {
 		private Text filename;
 
 		@Override
@@ -37,7 +37,7 @@ public class LineWritableJob extends Configured implements Tool {
 		}
 
 		@Override
-		protected void map(NullWritable key, BytesWritable value,
+		protected void map(NullWritable key, Text value,
 				Context context) throws IOException, InterruptedException {
 			context.write(filename, value);
 		}
@@ -78,7 +78,7 @@ public class LineWritableJob extends Configured implements Tool {
 		FileOutputFormat.setOutputPath(job, outPath);
 
 		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(BytesWritable.class);
+		job.setOutputValueClass(Text.class);
 		job.setMapperClass(SequenceFileMapper.class);
 		
 		return job.waitForCompletion(true) ? 0 : 1;

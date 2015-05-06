@@ -1,4 +1,4 @@
-package analysis;
+package reduce;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,6 +8,8 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
+
+import writable.DayStatsWritable;
 
 public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> { 
 	

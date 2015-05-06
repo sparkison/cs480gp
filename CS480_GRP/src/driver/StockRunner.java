@@ -1,4 +1,4 @@
-package analysis;
+package driver;
 
 /*
  * Author: Daniel Sullivan
@@ -20,6 +20,9 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import map.EMAMapper;
+import map.HiLowMapper;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
@@ -34,6 +37,10 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
+import reduce.EMAReducer;
+import reduce.HiLowReducer;
+import writable.DayStatsWritable;
+
 public class StockRunner {
 
 	public static void main(String[] args) throws Exception {
@@ -47,8 +54,8 @@ public class StockRunner {
 		Path inPath = new Path(inputPath);
 		Path outPath = new Path(outputPath);
 		
-		Path hiLowOut = new Path(outPath.getName()+"hiLow");
-		Path emaOut = new Path(outPath.getName()+"emas");
+		Path hiLowOut = new Path(outPath.getName()+"_hiLow");
+		Path emaOut = new Path(outPath.getName()+"_emas");
 
 		// Remove old output path, if exist
 		if (fs.exists(hiLowOut)) {
@@ -58,26 +65,26 @@ public class StockRunner {
 			fs.delete(emaOut, true);
 		}
 		
-//		Job job = Job.getInstance(conf, "Hi/Lows");
-//		
-//		// Make sure input format set for SequenceFiles
-//		job.setInputFormatClass(SequenceFileInputFormat.class);
-//		
-//		job.setJarByClass(StockRunner.class);
-//		
-//		job.setMapperClass(HiLowMapper.class);
-//		
-//		job.setReducerClass(HiLowReducer.class);
-//		
-//		job.setMapOutputKeyClass(Text.class);
-//		job.setMapOutputValueClass(DayStatsWritable.class);
-//		job.setOutputKeyClass(Text.class);
-//		job.setOutputValueClass(Text.class);
-//		
-//		FileInputFormat.addInputPath(job, inPath);
-//		FileOutputFormat.setOutputPath(job, hiLowOut);
-//		
-//		job.waitForCompletion(true); 
+		Job job = Job.getInstance(conf, "Hi/Lows");
+		
+		// Make sure input format set for SequenceFiles
+		job.setInputFormatClass(SequenceFileInputFormat.class);
+		
+		job.setJarByClass(StockRunner.class);
+		
+		job.setMapperClass(HiLowMapper.class);
+		
+		job.setReducerClass(HiLowReducer.class);
+		
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(DayStatsWritable.class);
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(Text.class);
+		
+		FileInputFormat.addInputPath(job, inPath);
+		FileOutputFormat.setOutputPath(job, hiLowOut);
+		
+		job.waitForCompletion(true); 
 		
 		Configuration conf2 = new Configuration(); 
 		Job job2 = Job.getInstance(conf2, "EMAs");

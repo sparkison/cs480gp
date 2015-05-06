@@ -1,4 +1,4 @@
-package analysis;
+package writable;
 
 import java.io.DataInput;
 import java.io.DataOutput;

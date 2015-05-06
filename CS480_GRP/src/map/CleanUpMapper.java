@@ -1,4 +1,4 @@
-package analysis;
+package map;
 
 import java.io.IOException;
 
@@ -6,6 +6,8 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Mapper.Context;
+
+import writable.CleanUpWritable;
 
 public class CleanUpMapper extends Mapper<Object, Text, Text, CleanUpWritable>{
 

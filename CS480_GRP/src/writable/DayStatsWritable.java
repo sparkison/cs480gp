@@ -1,4 +1,4 @@
-package analysis;
+package writable;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -45,13 +45,12 @@ public class DayStatsWritable implements Writable, Comparable<DayStatsWritable>{
 	private DoubleWritable twentyLow; 
 	private DoubleWritable thirtyLow;
 
-	public DayStatsWritable(Text value) {
+	public DayStatsWritable(Text value) throws Exception{
 
 		if (value.toString().trim().equals("")) {
-			System.out.println("\n\n*************************************************************\n\n");
+			// System.out.println("\n******************************\n RECEIVED EMPTY STRING \n******************************\n");
 			return;
 		}
-		    	System.out.println(value.toString());
 
 		String line = value.toString().trim(); 
 		if(line.endsWith(",")){

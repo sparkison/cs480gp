@@ -1,4 +1,4 @@
-package analysis;
+package reduce;
 
 import java.io.IOException;
 
@@ -6,6 +6,8 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
+
+import writable.CleanUpWritable;
 
 public class CleanUpReducer extends Reducer<Text,CleanUpWritable,Text,Text> { 
 	
