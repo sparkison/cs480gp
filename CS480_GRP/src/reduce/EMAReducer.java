@@ -178,10 +178,12 @@ public class EMAReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Text>
 					context.write(new Text(r), new Text(l));
 				}
 			} catch(Exception e) {
+				System.out.println("\n\n**********************************************");
 				System.out.println("NullPointerException on parsing stock data");
 				System.out.println("Line position length: " + lineBuilder.length);
 				System.out.println("Enter position index: " + posIndex);
 				System.err.println(e);
+				System.out.println("**********************************************\n\n");
 				// System.exit(0);
 			}
 

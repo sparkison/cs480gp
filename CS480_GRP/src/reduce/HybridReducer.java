@@ -227,11 +227,13 @@ public class HybridReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Te
 					context.write(new Text(r), new Text(l));
 				}
 			} catch(Exception e) {
+				System.out.println("\n\n**********************************************");
 				System.out.println("NullPointerException on parsing stock data");
 				System.out.println("Line position length: " + lineBuilder.length);
 				System.out.println("Enter position index: " + posIndex);
 				System.out.println("Exit position index: " + exitLow);
 				System.err.println(e);
+				System.out.println("**********************************************\n\n");
 				// System.exit(0);
 			}
 
