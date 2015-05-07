@@ -182,7 +182,7 @@ public class EMAReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Text>
 				System.err.println("Error parsing stock data");
 				System.err.println("Line position length: " + lineBuilder.length);
 				System.err.println("Enter position index: " + posIndex);
-				System.err.println(e);
+				e.printStackTrace();
 				System.err.println("**********************************************\n\n");
 				// System.exit(0);
 			}

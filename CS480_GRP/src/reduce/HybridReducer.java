@@ -232,7 +232,7 @@ public class HybridReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Te
 				System.err.println("Line position length: " + lineBuilder.length);
 				System.err.println("Enter position index: " + posIndex);
 				System.err.println("Exit position index: " + exitLow);
-				System.err.println(e);
+				e.printStackTrace();
 				System.err.println("**********************************************\n\n");
 				// System.exit(0);
 			}
