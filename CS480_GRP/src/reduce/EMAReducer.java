@@ -74,6 +74,11 @@ public class EMAReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Text>
 
 	public void reduce(CompositeKey key, Iterable<DayStatsWritable> values, Context context) throws IOException, InterruptedException{
 
+		//		// Testing for proper sorting...
+		//		for(DayStatsWritable val: values){
+		//			context.write(key.getTicker(), new Text(val.toString()));
+		//		}
+
 		ticker = key.getTicker().toString().trim(); 
 
 		results.clear();
@@ -163,14 +168,23 @@ public class EMAReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Text>
 		}
 
 		for(String r: results.keySet()){
+			int posIndex = -1;
+			try{
+				posIndex = Integer.parseInt(r.substring(5, r.indexOf(":")).trim());
+				if(!lineBuilder[posIndex].equals("")){
+					exitPosition(0,0,0,posIndex,context); 
+				}
+				for(String l: results.get(r)){
+					context.write(new Text(r), new Text(l));
+				}
+			} catch(Exception e) {
+				System.out.println("NullPointerException on parsing stock data");
+				System.out.println("Line position length: " + lineBuilder.length);
+				System.out.println("Enter position index: " + posIndex);
+				System.err.println(e);
+				// System.exit(0);
+			}
 
-			int posIndex = Integer.parseInt(r.substring(5, r.indexOf(":")).trim());
-			if(!lineBuilder[posIndex].equals("")){
-				exitPosition(0,0,0,posIndex,context); 
-			}
-			for(String l: results.get(r)){
-				context.write(new Text(r), new Text(l));
-			}
 		}
 	}
 

@@ -85,8 +85,7 @@ public class StockJob extends Configured implements Tool {
 		FileInputFormat.addInputPath(job, inPath);
 		FileOutputFormat.setOutputPath(job, hiLowOut);
 		
-		job.waitForCompletion(true); 
-				
+		job.waitForCompletion(true); 				
 		
 		Configuration conf2 = new Configuration(); 
 		Job job2 = Job.getInstance(conf2, "EMAs");
