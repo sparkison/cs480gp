@@ -9,25 +9,26 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
+import writable.CompositeKey;
 import writable.DayStatsWritable;
 
-public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> { 
-	
+public class EMAReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Text> { 
+
 	private String date;
 	private String ticker; 
 	private Text newKey = new Text(); 
 	private Text valout = new Text(); 
 
 	private final double startCapitalDefault = 5000.00; 
-	
+
 	private final int pricesSize = 4;
 	private final int open = 0; 
 	private final int high = 1; 
 	private final int low = 2; 
 	private final int close = 3;
 	private double[] prices = new double[pricesSize]; 
-	
-	
+
+
 	private final int emaSize = 6; 
 	private final int ema12 = 0; 
 	private final int ema26 = 1;
@@ -37,13 +38,13 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 	private final int ema200 = 5; 
 	private double[] thisEMA = new double[emaSize]; 
 	private double[] prevEMA = new double[emaSize];
-	
+
 	private final int nSize = 3;
 	private final int halfN = 0; 
 	private final int oneN = 1; 
 	private final int twoN = 2; 
 	private double[] nVals = new double[nSize];
-	
+
 	private final int posSize = 10; 
 	private final int pos12_26 = 0;
 	private final int pos12_50 = 1;
@@ -67,16 +68,16 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 	private double[] exitCapital = new double[posSize*3];
 	private double[] realizedGains = new double[posSize*3]; 
 	private String[] lineBuilder = new String[posSize*3]; 
-	
-	private HashMap<String, ArrayList<String>> results = new HashMap<String, ArrayList<String>>(); 
-//	private ArrayList<String> resultsOrder = new ArrayList<String>(); 
 
-	public void reduce(Text key, Iterable<DayStatsWritable> values, Context context) throws IOException, InterruptedException{
-		
-		ticker = key.toString().trim(); 
-		
+	private HashMap<String, ArrayList<String>> results = new HashMap<String, ArrayList<String>>(); 
+	//	private ArrayList<String> resultsOrder = new ArrayList<String>(); 
+
+	public void reduce(CompositeKey key, Iterable<DayStatsWritable> values, Context context) throws IOException, InterruptedException{
+
+		ticker = key.getTicker().toString().trim(); 
+
 		results.clear();
-		
+
 		for(int i = 0; i < posSize * 3; i++){
 			posEntered[i] = false; 
 			entrySignal[i] = false; 
@@ -96,21 +97,21 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 		}
 		for(int i = 0; i < nSize; i++) nVals[i] = 0.0; 
 		for(int i = 0; i < pricesSize; i++) prices[i] = 0.0; 
-		
-		
+
+
 		for(DayStatsWritable val: values){
-			
+
 			date = val.getDate().toString().trim(); 
-			
+
 			prices[open] = val.getOpen().get(); 
 			prices[high] = val.getHigh().get(); 
 			prices[low] = val.getLow().get(); 
 			prices[close] = val.getClose().get();
-			
+
 			nVals[halfN] = (val.getnValue().get() / 2); 
 			nVals[oneN] = (val.getnValue().get()); 
 			nVals[twoN] = (val.getnValue().get() * 2); 
-			
+
 			thisEMA[ema12] = val.getEMA12().get(); 
 			thisEMA[ema26] = val.getEMA26().get(); 
 			thisEMA[ema50] = val.getEMA50().get();
@@ -119,15 +120,15 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 			thisEMA[ema200] = val.getEMA200().get();
 
 			// Calls to process data
-			
+
 			for(int i = 0; i < nSize; i++){
 				analyzeTradeDate(ema12, ema26, i, pos12_26, context);
 			}
-			
+
 			for(int i = 0; i < nSize; i++){
 				analyzeTradeDate(ema12, ema50, i, pos12_50, context);
 			}
-			
+
 			for(int i = 0; i < nSize; i++){
 				analyzeTradeDate(ema12, ema75, i, pos12_75, context);
 			}
@@ -152,7 +153,7 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 			for(int i = 0; i < nSize; i++){
 				analyzeTradeDate(ema75, ema200, i, pos75_200, context);
 			}
-			
+
 			prevEMA[ema12] = thisEMA[ema12]; 
 			prevEMA[ema26] = thisEMA[ema26]; 
 			prevEMA[ema50] = thisEMA[ema50];
@@ -160,9 +161,9 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 			prevEMA[ema150] = thisEMA[ema150]; 
 			prevEMA[ema200] = thisEMA[ema200];
 		}
-		
+
 		for(String r: results.keySet()){
-				
+
 			int posIndex = Integer.parseInt(r.substring(5, r.indexOf(":")).trim());
 			if(!lineBuilder[posIndex].equals("")){
 				exitPosition(0,0,0,posIndex,context); 
@@ -172,41 +173,41 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 			}
 		}
 	}
-	
+
 	public void analyzeTradeDate(int shortEMA, int longEMA, int nVal, int posIndex, Context context){
-		
+
 		int trueIndex = (posIndex * 3) + nVal;  
-		
+
 		double thisShort = thisEMA[shortEMA];
 		double prevShort = prevEMA[shortEMA];
 		double thisLong = thisEMA[longEMA];
 		double prevLong = prevEMA[longEMA];
 		double thisN = nVals[nVal]; 
-		
+
 		double thisSpread = thisShort - thisLong;
 		double prevSpread = prevShort - prevLong;
-		
+
 		// IF ANY OF THESE CONDITIONS EXIST
 		// 		Not enough data to run yet so just return 
 		if(Math.abs(thisN) == 99999.99) return;
 		if(Math.abs(thisLong) == 99999.99) return;
 		if(Math.abs(prevLong) == 99999.99) return; 
-		
+
 		newKey.set("EM"+shortEMA+""+longEMA+""+nVal+""+trueIndex+":"+ticker);
-//		String hashKey = shortEMA+""+longEMA+""+nVal+""+posIndex+":"+ticker;
-		
+		//		String hashKey = shortEMA+""+longEMA+""+nVal+""+posIndex+":"+ticker;
+
 		if(!results.containsKey(newKey.toString())){
 			ArrayList<String> a = new ArrayList<String>(); 
 			results.put(newKey.toString(), a); 
 		}
-		
+
 		//newKey.set(shortEMA+""+longEMA+""+nVal+""+posIndex+":"+ticker); 
-		
+
 		if(entrySignal[trueIndex]){
 			enterPosition(shortEMA, longEMA, nVal, trueIndex, context);
 			return;
 		}
-		
+
 		if(exitSignal[trueIndex]){
 			exitPosition(shortEMA, longEMA, nVal, trueIndex, context);
 			return; 
@@ -214,7 +215,7 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 
 		//	IF thisSpread is positive then a potential entry signal has occurred
 		if(thisSpread > 0){
-			
+
 			// If a position is already entered then return
 			//		can't enter an already entered position
 			// 		Check if stop condition met;
@@ -224,7 +225,7 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 				}
 				return;
 			}
-			
+
 			// If prevSpread is <= 0 then an entry signal has occurred
 			if(prevSpread <= 0){
 				entrySignal[trueIndex] = true; 
@@ -233,31 +234,31 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 		}
 		//	IF thisSpread is negative then a potential exit signal has occurred
 		if(thisSpread < 0){
-			
+
 			// If a position is not entered then there is no position to close
 			//		can't exit a position that doesn't exist
-			
+
 			if(!posEntered[trueIndex]){
 				return; 
 			}
-			
+
 			// Check if stop condition met before signal given at closing price
 			if(posEntered[trueIndex] && prices[low] < stopPrice[trueIndex]){
 				exitOnStop(shortEMA, longEMA, nVal, trueIndex, context);
 				return; 
 			}
-			
+
 			// If prevSpread >= 0 then exit signal has occurred
 			if(prevSpread >= 0){
 				exitSignal[trueIndex] = true; 
 				return; 
 			}
 		}
-		
+
 		// DEFAULT if thisSpread = 0 it is neither an entry or exit signal - do nothing
-		
+
 	}
-	
+
 	public void enterPosition(int shortEMA, int longEMA, int nVal, int posIndex, Context context){
 		posEntered[posIndex] = true;
 		entrySignal[posIndex] = false; 
@@ -265,24 +266,24 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 		shares[posIndex] = (int)(startCapital[posIndex] / entryPrice[posIndex]);
 		entryCapital[posIndex] = (double)shares[posIndex] * entryPrice[posIndex]; 
 		stopPrice[posIndex] = entryPrice[posIndex] - nVals[nVal];
-		
-//		setValout("BUY", nVal, posIndex);
-//		
-//		ArrayList<String> a = results.get(newKey.toString());
-//		a.add(valout.toString()); 
-//		results.put(newKey.toString(), a); 
+
+		//		setValout("BUY", nVal, posIndex);
+		//		
+		//		ArrayList<String> a = results.get(newKey.toString());
+		//		a.add(valout.toString()); 
+		//		results.put(newKey.toString(), a); 
 		lineBuilder[posIndex] = date+"\t"+startCapital[posIndex]+"\t"+entryPrice[posIndex]+"\t"+shares[posIndex]+"\t"+
 				nVals[nVal]+"\t"+stopPrice[posIndex]+"\t";
-		
-//		try {
-//			context.write(newKey, valout);
-//		} catch (IOException | InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
+
+		//		try {
+		//			context.write(newKey, valout);
+		//		} catch (IOException | InterruptedException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		}
+
 	}
-	
+
 	public void exitPosition(int shortEMA, int longEMA, int nVal, int posIndex, Context context){
 		posEntered[posIndex] = false; 
 		exitSignal[posIndex] = false; 
@@ -290,14 +291,14 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 		exitCapital[posIndex] = exitPrice[posIndex] * (double)shares[posIndex];
 		realizedGains[posIndex] = exitCapital[posIndex] - entryCapital[posIndex]; 
 		startCapital[posIndex] = startCapital[posIndex] + realizedGains[posIndex]; 
-		
+
 		double percentGain = ((exitCapital[posIndex]/entryCapital[posIndex]) - 1.0) * 100.00;
-		
+
 		lineBuilder[posIndex] += ("SELL\t"+date+"\t"+exitPrice[posIndex]+"\t"+realizedGains[posIndex]+"\t"+percentGain+"\t"+startCapital[posIndex]);
-		
-//		setValout("SELL", nVal, posIndex);
+
+		//		setValout("SELL", nVal, posIndex);
 		ArrayList<String> a = results.get(newKey.toString());
-//		a.add(valout.toString()); 
+		//		a.add(valout.toString()); 
 		a.add(lineBuilder[posIndex]);
 		results.put(newKey.toString(), a); 
 		lineBuilder[posIndex] = "";
@@ -306,18 +307,18 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 		exitCapital[posIndex] = 0; 
 		stopPrice[posIndex] = 0; 
 		shares[posIndex] = 0; 
-//		try {
-//			context.write(newKey, valout);
-//		} catch (IOException | InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		//		try {
+		//			context.write(newKey, valout);
+		//		} catch (IOException | InterruptedException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		}
 	}
-	
+
 	public void exitOnStop(int shortEMA, int longEMA, int nVal, int posIndex, Context context){
 		posEntered[posIndex] = false; 
 		exitSignal[posIndex] = false; 
-		
+
 		if(prices[open] < stopPrice[posIndex]){
 			exitPrice[posIndex] = prices[open];
 			exitCapital[posIndex] = exitPrice[posIndex] * (double)shares[posIndex];
@@ -327,14 +328,14 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 		}
 		realizedGains[posIndex] = exitCapital[posIndex] - entryCapital[posIndex]; 
 		startCapital[posIndex] = startCapital[posIndex] + realizedGains[posIndex]; 
-		
+
 		double percentGain = ((exitPrice[posIndex]/entryPrice[posIndex]) - 1.0) * 100.00;
-		
+
 		lineBuilder[posIndex] += ("STOP\t"+date+"\t"+exitPrice[posIndex]+"\t"+realizedGains[posIndex]+"\t"+percentGain+"\t"+startCapital[posIndex]);
-		
-//		setValout("STOP", nVal, posIndex);
+
+		//		setValout("STOP", nVal, posIndex);
 		ArrayList<String> a = results.get(newKey.toString());
-//		a.add(valout.toString()); 
+		//		a.add(valout.toString()); 
 		a.add(lineBuilder[posIndex]);
 		lineBuilder[posIndex] = ""; 
 		results.put(newKey.toString(), a); 
@@ -343,34 +344,34 @@ public class EMAReducer extends Reducer<Text,DayStatsWritable,Text,Text> {
 		exitCapital[posIndex] = 0; 
 		stopPrice[posIndex] = 0; 
 		shares[posIndex] = 0; 
-//		try {
-//			context.write(newKey, valout);
-//		} catch (IOException | InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		//		try {
+		//			context.write(newKey, valout);
+		//		} catch (IOException | InterruptedException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		}
 	}
-	
+
 	public void setValout(String action, int nVal, int posIndex){
 		valout.set(date+"\t"+action+"\t"+nVals[nVal]+"\t"+entryPrice[posIndex]+"\t"+exitPrice[posIndex]+"\t"+
 				shares[posIndex]+"\t"+stopPrice[posIndex]+"\t"+startCapital[posIndex]+"\t"+entryCapital[posIndex]+"\t"+
 				exitCapital[posIndex]+"\t"+realizedGains[posIndex]);
 	}
-	
-//	private String date;
-//	private String ticker; 
-//	private double[] prices = new double[pricesSize]; 
-//	private double[] thisEMA = new double[emaSize]; 
-//	private double[] prevEMA = new double[emaSize];
-//	private double[] nVals = new double[nSize];
-//	private double[] entryPrice = new double[posSize]; 
-//	private double[] exitPrice = new double[posSize]; 
-//	private int[] shares = new int[posSize];
-//	private double[] stopPrice = new double[posSize]; 
-//	private double[] startCapital = new double[posSize]; 
-//	private double[] entryCapital = new double[posSize]; 
-//	private double[] exitCapital = new double[posSize];
-//	private double[] realizedGains = new double[posSize]; 
+
+	//	private String date;
+	//	private String ticker; 
+	//	private double[] prices = new double[pricesSize]; 
+	//	private double[] thisEMA = new double[emaSize]; 
+	//	private double[] prevEMA = new double[emaSize];
+	//	private double[] nVals = new double[nSize];
+	//	private double[] entryPrice = new double[posSize]; 
+	//	private double[] exitPrice = new double[posSize]; 
+	//	private int[] shares = new int[posSize];
+	//	private double[] stopPrice = new double[posSize]; 
+	//	private double[] startCapital = new double[posSize]; 
+	//	private double[] entryCapital = new double[posSize]; 
+	//	private double[] exitCapital = new double[posSize];
+	//	private double[] realizedGains = new double[posSize]; 
 }
 
 

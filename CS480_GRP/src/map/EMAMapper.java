@@ -7,11 +7,12 @@ import java.io.StringReader;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import writable.CompositeKey;
 import writable.DayStatsWritable;
 
-public class EMAMapper extends Mapper<Object, Text, Text, DayStatsWritable>{
+public class EMAMapper extends Mapper<Object, Text, CompositeKey, DayStatsWritable>{
 
-	private static Text mapkey = new Text();
+	private static CompositeKey tickerDate = new CompositeKey();
 
 	public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 
@@ -23,13 +24,19 @@ public class EMAMapper extends Mapper<Object, Text, Text, DayStatsWritable>{
 
 		BufferedReader bufReader = new BufferedReader(new StringReader(value.toString()));
 		String line = null;
+		Text ticker = new Text();
+		Text date = new Text();
 		while( (line = bufReader.readLine()) != null ) {
 
 			try{
 				dayStat = new DayStatsWritable(new Text(line));
-				mapkey = dayStat.getTicker();
-				if (mapkey != null)
-					context.write(new Text(dayStat.getTicker()), dayStat);
+				ticker.set(dayStat.getTicker());
+				date.set(dayStat.getDate());
+				if (!(ticker == null || date == null)){
+					tickerDate.setTicker(ticker);
+					tickerDate.setDate(date);
+					context.write(tickerDate, dayStat);
+				}
 			}catch(Exception e){
 				System.out.println("\n\n" + line + "\n\n");
 				e.printStackTrace();
@@ -37,6 +44,6 @@ public class EMAMapper extends Mapper<Object, Text, Text, DayStatsWritable>{
 			}
 
 		}
-		
+
 	}
 }

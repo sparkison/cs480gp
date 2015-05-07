@@ -26,6 +26,7 @@ import org.apache.hadoop.util.Tool;
 import reduce.EMAReducer;
 import reduce.HiLowReducer;
 import reduce.HybridReducer; 
+import writable.CompositeKey;
 import writable.DayStatsWritable;
 
 
@@ -76,7 +77,7 @@ public class StockJob extends Configured implements Tool {
 		
 		job.setReducerClass(HiLowReducer.class);
 		
-		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputKeyClass(CompositeKey.class);
 		job.setMapOutputValueClass(DayStatsWritable.class);
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
@@ -85,6 +86,7 @@ public class StockJob extends Configured implements Tool {
 		FileOutputFormat.setOutputPath(job, hiLowOut);
 		
 		job.waitForCompletion(true); 
+				
 		
 		Configuration conf2 = new Configuration(); 
 		Job job2 = Job.getInstance(conf2, "EMAs");
@@ -98,7 +100,7 @@ public class StockJob extends Configured implements Tool {
 		
 		job2.setReducerClass(EMAReducer.class);
 		
-		job2.setMapOutputKeyClass(Text.class);
+		job2.setMapOutputKeyClass(CompositeKey.class);
 		job2.setMapOutputValueClass(DayStatsWritable.class);
 		job2.setOutputKeyClass(Text.class);
 		job2.setOutputValueClass(Text.class);
@@ -120,7 +122,7 @@ public class StockJob extends Configured implements Tool {
 		
 		job3.setReducerClass(HybridReducer.class);
 		
-		job3.setMapOutputKeyClass(Text.class);
+		job3.setMapOutputKeyClass(CompositeKey.class);
 		job3.setMapOutputValueClass(DayStatsWritable.class);
 		job3.setOutputKeyClass(Text.class);
 		job3.setOutputValueClass(Text.class);

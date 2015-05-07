@@ -3,7 +3,6 @@ package reduce;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import java.io.BufferedReader;
 import java.io.StringReader;
 
@@ -12,6 +11,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
+import writable.CompositeKey;
 import writable.DayStatsWritable;
 
 /*********************************************************************
@@ -26,7 +26,7 @@ import writable.DayStatsWritable;
  *********************************************************************
  *********************************************************************/
 
-public class HybridReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
+public class HybridReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Text>{
 
 	private String date;
 	private String ticker; 
@@ -102,9 +102,9 @@ public class HybridReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 
 	private HashMap<String, ArrayList<String>> results = new HashMap<String, ArrayList<String>>(); 
 
-	public void reduce(Text key, Iterable<DayStatsWritable> values, Context context) throws IOException, InterruptedException{
+	public void reduce(CompositeKey key, Iterable<DayStatsWritable> values, Context context) throws IOException, InterruptedException{
 
-		ticker = key.toString().trim(); 
+		ticker = key.getTicker().toString().trim(); 
 		results.clear();
 
 		for(int i = 0; i < posSize * 3; i++){
@@ -152,7 +152,7 @@ public class HybridReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 			daysHiLows[tenLow] = val.getTenLow().get(); 
 			daysHiLows[twentyLow] = val.getTwentyLow().get();
 			daysHiLows[thirtyLow] = val.getThirtyLow().get();
-			
+
 			for(int i = 0; i < nSize; i++){
 				analyzeTradeDate(ema12, ema75, twentyHigh, tenLow, i, pos12_75_20h_10l);
 			}
@@ -208,9 +208,9 @@ public class HybridReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 				analyzeTradeDate(ema50, ema150, fittyFiveHigh, twentyLow, i, pos12_75_55h_20l);
 			}
 		}		
-		
+
 		for(String r: results.keySet()){
-			
+
 			int posIndex = Integer.parseInt(r.substring(7, r.indexOf(":")).trim());
 			int exitLow = Integer.parseInt((r.charAt(3)+"").trim());
 			if(!lineBuilder[posIndex].equals("")){
@@ -220,19 +220,19 @@ public class HybridReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 				context.write(new Text(r), new Text(l));
 			}
 		}
-		
+
 	}
-	
+
 	public void analyzeTradeDate(int shortEMA, int longEMA, int entryHi, int exitLow, int nVal, int posIndex){
-		
+
 		int trueIndex = (posIndex * 3) + nVal;  
-		
+
 		double thisHi = daysHiLows[entryHi];
 		double thisLow = daysHiLows[exitLow];
 		double shortEMAvalue = thisEMA[shortEMA]; 
 		double longEMAvalue = thisEMA[longEMA]; 
 		double thisN = nVals[nVal]; 
-		
+
 		// IF ANY OF THESE CONDITIONS EXIST
 		// 		Not enough data to run yet so just return 
 		if(Math.abs(longEMAvalue) == 99999.99) return; 
@@ -240,13 +240,13 @@ public class HybridReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 		if(Math.abs(thisHi) == 99999.99) return;
 		if(Math.abs(thisLow) == 99999.99) return; 
 		if(Math.abs(thisN) == 99999.99) return;
-		
+
 		newKey.set("HY"+shortEMA+""+longEMA+""+entryHi+""+exitLow+""+nVal+""+trueIndex+":"+ticker);
 		if(!results.containsKey(newKey.toString())){
 			ArrayList<String> a = new ArrayList<String>(); 
 			results.put(newKey.toString(), a); 
 		}
-		
+
 		/****************************************************************
 		 * 
 		 * if not uptrend 
@@ -256,13 +256,13 @@ public class HybridReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 		 * 
 		 * 
 		 ***************************************************************/
-		
+
 		if(!uptrend[trueIndex]){
 			if(exitConditionsMet(trueIndex, exitLow)) exitPosition(trueIndex, exitLow); 
 			uptrend[trueIndex] = shortEMAvalue > longEMAvalue; 
 			return;
 		}
-		
+
 		if(uptrend[trueIndex] && posEntered[trueIndex]){
 			uptrend[trueIndex] = shortEMAvalue > longEMAvalue; 
 			if(exitConditionsMet(trueIndex, exitLow)) exitPosition(trueIndex, exitLow);
@@ -280,17 +280,17 @@ public class HybridReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 			return (prices[low] <= stopPrice[trueIndex] || prices[low] <= daysHiLows[exitLow]);
 		else return false; 
 	}
-	
+
 	private boolean entryConditionsMet(int entryHigh){
 		return prices[high] > daysHiLows[entryHigh]; 
 	}
 
 	private void exitPosition(int trueIndex, int exitLow){
-		
+
 		posEntered[trueIndex] = false; 
-		
+
 		String action = "";
-		
+
 		if(prices[open] <= daysHiLows[exitLow]){
 			exitPrice[trueIndex] = prices[open]; 
 			action = "SELL"; 
@@ -307,17 +307,17 @@ public class HybridReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 			exitPrice[trueIndex] = prices[close];
 			action = "EOF_SELL";
 		}
-		
+
 		exitCapital[trueIndex] = exitPrice[trueIndex] * (double)shares[trueIndex];
-		
+
 		realizedGains[trueIndex] = exitCapital[trueIndex] - entryCapital[trueIndex]; 
 		startCapital[trueIndex] = startCapital[trueIndex] + realizedGains[trueIndex]; 
-		
+
 		double percentGain = (exitPrice[trueIndex] / entryPrice[trueIndex] - 1.0) * 100.00; 
-		
+
 		lineBuilder[trueIndex] += (action+"\t"+date+"\t"+exitPrice[trueIndex]+"\t"+
 				realizedGains[trueIndex]+"\t"+percentGain+"\t"+startCapital[trueIndex]); 
-		
+
 		ArrayList<String> a = results.get(newKey.toString());
 		a.add(lineBuilder[trueIndex]);
 		results.put(newKey.toString(), a);
@@ -329,12 +329,12 @@ public class HybridReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 		exitCapital[trueIndex] = 0.0; 
 		realizedGains[trueIndex] = 0.0; 
 		lineBuilder[trueIndex] = ""; 
-		
+
 	}
 
 	private void enterPosition(int trueIndex, int entryHi, int nVal){
 		posEntered[trueIndex] = true; 
-		
+
 		if(prices[open] >= daysHiLows[entryHi]){
 			// entry price = open price
 			entryPrice[trueIndex] = prices[open]; 
@@ -345,11 +345,11 @@ public class HybridReducer extends Reducer<Text,DayStatsWritable,Text,Text>{
 		shares[trueIndex] = (int)(startCapital[trueIndex] / entryPrice[trueIndex]); 
 		stopPrice[trueIndex] = entryPrice[trueIndex] - nVals[nVal];
 		entryCapital[trueIndex] = entryPrice[trueIndex] * shares[trueIndex]; 
-		
+
 		lineBuilder[trueIndex] = date+"\t"+startCapital[trueIndex]+"\t"+entryPrice[trueIndex]
 				+"\t"+shares[trueIndex]+"\t"+nVals[nVal]+"\t"+stopPrice[trueIndex]+"\t";
-		
+
 	}
 
-	
+
 }

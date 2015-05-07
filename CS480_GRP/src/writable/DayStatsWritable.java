@@ -8,6 +8,9 @@ import org.apache.hadoop.io.Writable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class DayStatsWritable implements Writable, Comparable<DayStatsWritable>{
 
@@ -283,7 +286,19 @@ public class DayStatsWritable implements Writable, Comparable<DayStatsWritable>{
 
 	@Override
 	public int compareTo(DayStatsWritable o) {
-		return this.date.compareTo(o.getDate());
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Date date1 = null;
+		Date date2 = null;
+    	try {
+			date1 = sdf.parse(this.date.toString());
+			date2 = sdf.parse(o.date.toString());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		
+		//return this.date.compareTo(o.getDate());
+    	return date1.compareTo(date2);
 	}
 
 	public String toString(){
