@@ -1,3 +1,10 @@
+/**
+ * @author Shaun Parkison
+ * Custom CompositeKey writable so we
+ * can doubly sort the keys from map outputs
+ * Will sort first based on stock, and second based on date
+ */
+
 package writable;
 
 import java.io.DataInput;
