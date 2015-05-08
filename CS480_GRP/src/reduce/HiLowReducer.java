@@ -21,6 +21,8 @@ public class HiLowReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Tex
 	private Text newKey = new Text(); 
 	private Text valout = new Text(); 
 
+	private String prevTicker = ""; 
+
 	private final double startCapitalDefault = 5000.00; 
 
 	private final static int pricesSize = 4;
@@ -76,33 +78,75 @@ public class HiLowReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Tex
 
 	public void reduce(CompositeKey key, Iterable<DayStatsWritable> values, Context context) throws IOException, InterruptedException{
 
-		//		// Testing for proper sorting...
-		//		for(DayStatsWritable val: values){
-		//			context.write(key.getTicker(), new Text(val.toString()));
-		//		}
+		//				// Testing for proper sorting...
+		//				for(DayStatsWritable val: values){
+		//					context.write(key.getTicker(), new Text(val.toString()));
+		//				}
 
 		ticker = key.getTicker().toString().trim(); 
 
-		results.clear();
 
-		for(int i = 0; i < posSize * 3; i++){
-			posEntered[i] = false; 
-			//			entrySignal[i] = false; 
-			//			exitSignal[i] = false; 
-			entryPrice[i] = 0.0;
-			exitPrice[i] = 0.0; 
-			shares[i] = 0; 
-			stopPrice[i] = 0.0; 
-			startCapital[i] = startCapitalDefault;
-			realizedGains[i] = 0.0; 
-			entryCapital[i] = 0.0;
-			exitCapital[i] = 0.0; 
+
+//		for(DayStatsWritable val: values){
+//			System.out.println(key.toString());
+//		}
+//
+//		System.out.println("*****************************************************");
+//		System.out.println("*****************************************************");
+//		System.out.println("*****************************************************");
+
+		if(!key.getTicker().toString().trim().equals(prevTicker)){
+//			System.out.println("UPDATING NEW TICKER");
+//			System.out.println("NEW TICKER = "+key.getTicker().toString());
+			
+			for(String r: results.keySet()){
+				int posIndex = -1;
+				int exitLow = -1;
+//				try {
+//					System.out.println("PRINTING r = "+r);
+					posIndex = Integer.parseInt(r.substring(5, r.indexOf(":")).trim());
+//					System.out.println("PRINTING posIndex =" +posIndex+"\n");
+					exitLow = Integer.parseInt((r.charAt(3)+"").trim());
+					if(!lineBuilder[posIndex].equals("")){
+						exitPosition(exitLow,posIndex); 
+					}
+					for(String l: results.get(r)){
+						context.write(new Text(r), new Text(l));
+					}
+//				} catch(Exception e){
+//					System.err.println("\n\n**********************************************");
+//					System.err.println("Error parsing stock data");
+//					System.err.println("Line position length: " + lineBuilder.length);
+//					System.err.println("Enter position index: " + posIndex);
+//					System.err.println("Exit position index: " + exitLow);
+//					e.printStackTrace();
+//					System.err.println("**********************************************\n\n");
+//					// System.exit(0);
+//				}
+
+			}
+			
+			results.clear();
+			
+			for(int i = 0; i < posSize * 3; i++){
+				posEntered[i] = false; 
+				//			entrySignal[i] = false; 
+				//			exitSignal[i] = false; 
+				entryPrice[i] = 0.0;
+				exitPrice[i] = 0.0; 
+				shares[i] = 0; 
+				stopPrice[i] = 0.0; 
+				startCapital[i] = startCapitalDefault;
+				realizedGains[i] = 0.0; 
+				entryCapital[i] = 0.0;
+				exitCapital[i] = 0.0; 
+			}
+			for(int i = 0; i < numHiLows; i++){
+				daysHiLows[i] = 0.0; 
+			}
+			for(int i = 0; i < nSize; i++) nVals[i] = 0.0; 
+			for(int i = 0; i < pricesSize; i++) prices[i] = 0.0; 
 		}
-		for(int i = 0; i < numHiLows; i++){
-			daysHiLows[i] = 0.0; 
-		}
-		for(int i = 0; i < nSize; i++) nVals[i] = 0.0; 
-		for(int i = 0; i < pricesSize; i++) prices[i] = 0.0; 
 
 		for(DayStatsWritable val: values){
 
@@ -156,30 +200,9 @@ public class HiLowReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Tex
 
 		}
 
-		for(String r: results.keySet()){
-			int posIndex = -1;
-			int exitLow = -1;
-			try {
-				posIndex = Integer.parseInt(r.substring(5, r.indexOf(":")).trim());
-				exitLow = Integer.parseInt((r.charAt(3)+"").trim());
-				if(!lineBuilder[posIndex].equals("")){
-					exitPosition(exitLow,posIndex); 
-				}
-				for(String l: results.get(r)){
-					context.write(new Text(r), new Text(l));
-				}
-			} catch(Exception e){
-				System.err.println("\n\n**********************************************");
-				System.err.println("Error parsing stock data");
-				System.err.println("Line position length: " + lineBuilder.length);
-				System.err.println("Enter position index: " + posIndex);
-				System.err.println("Exit position index: " + exitLow);
-				e.printStackTrace();
-				System.err.println("**********************************************\n\n");
-				// System.exit(0);
-			}
 
-		}
+		prevTicker = key.getTicker().toString().trim(); 
+//		System.out.println("PREV TICKER = " + prevTicker);
 	}
 
 	public void analyzeTradeDate(int entryHi, int exitLow, int nVal, int HiLowIndex){

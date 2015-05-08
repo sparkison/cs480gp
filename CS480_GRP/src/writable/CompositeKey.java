@@ -105,4 +105,7 @@ public class CompositeKey implements WritableComparable<CompositeKey> {
 		CompositeKey p = (CompositeKey) o;
 		return ticker.equals(p.getTicker());
 	}
+	public String toString(){
+		return ticker.toString()+":"+date.toString();
+	}
 }

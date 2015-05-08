@@ -85,52 +85,50 @@ public class StockJob extends Configured implements Tool {
 		FileInputFormat.addInputPath(job, inPath);
 		FileOutputFormat.setOutputPath(job, hiLowOut);
 		
-		//job.waitForCompletion(true); 	
-		return job.waitForCompletion(true) ? 0 : 1;
+		job.waitForCompletion(true); 	
 		
-//		Configuration conf2 = new Configuration(); 
-//		Job job2 = Job.getInstance(conf2, "EMAs");
-//		
-//		// Make sure input format set for SequenceFiles
-//		job2.setInputFormatClass(SequenceFileInputFormat.class);
-//		
-//		job2.setJarByClass(StockJob.class);
-//		
-//		job2.setMapperClass(EMAMapper.class);
-//		
-//		job2.setReducerClass(EMAReducer.class);
-//		
-//		job2.setMapOutputKeyClass(CompositeKey.class);
-//		job2.setMapOutputValueClass(DayStatsWritable.class);
-//		job2.setOutputKeyClass(Text.class);
-//		job2.setOutputValueClass(Text.class);
-//		
-//		FileInputFormat.addInputPath(job2, inPath);
-//		FileOutputFormat.setOutputPath(job2, emaOut);
-//		
-//		job2.waitForCompletion(true);
-//
-//		Configuration conf3 = new Configuration(); 
-//		Job job3 = Job.getInstance(conf3, "HYBRID");
-//		
-//		// Make sure input format set for SequenceFiles
-//		job3.setInputFormatClass(SequenceFileInputFormat.class);
-//		
-//		job3.setJarByClass(StockJob.class);
-//		
-//		job3.setMapperClass(HybridMapper.class);
-//		
-//		job3.setReducerClass(HybridReducer.class);
-//		
-//		job3.setMapOutputKeyClass(CompositeKey.class);
-//		job3.setMapOutputValueClass(DayStatsWritable.class);
-//		job3.setOutputKeyClass(Text.class);
-//		job3.setOutputValueClass(Text.class);
-//		
-//		FileInputFormat.addInputPath(job3, inPath);
-//		FileOutputFormat.setOutputPath(job3, hybridOut);
-//		
-//		return job3.waitForCompletion(true) ? 0 : 1; 
+		Configuration conf2 = new Configuration(); 
+		Job job2 = Job.getInstance(conf2, "EMAs");
 		
+		// Make sure input format set for SequenceFiles
+		job2.setInputFormatClass(SequenceFileInputFormat.class);
+		
+		job2.setJarByClass(StockJob.class);
+		
+		job2.setMapperClass(EMAMapper.class);
+		
+		job2.setReducerClass(EMAReducer.class);
+		
+		job2.setMapOutputKeyClass(CompositeKey.class);
+		job2.setMapOutputValueClass(DayStatsWritable.class);
+		job2.setOutputKeyClass(Text.class);
+		job2.setOutputValueClass(Text.class);
+		
+		FileInputFormat.addInputPath(job2, inPath);
+		FileOutputFormat.setOutputPath(job2, emaOut);
+		
+		job2.waitForCompletion(true);
+
+		Configuration conf3 = new Configuration(); 
+		Job job3 = Job.getInstance(conf3, "HYBRID");
+		
+		// Make sure input format set for SequenceFiles
+		job3.setInputFormatClass(SequenceFileInputFormat.class);
+		
+		job3.setJarByClass(StockJob.class);
+		
+		job3.setMapperClass(HybridMapper.class);
+		
+		job3.setReducerClass(HybridReducer.class);
+		
+		job3.setMapOutputKeyClass(CompositeKey.class);
+		job3.setMapOutputValueClass(DayStatsWritable.class);
+		job3.setOutputKeyClass(Text.class);
+		job3.setOutputValueClass(Text.class);
+		
+		FileInputFormat.addInputPath(job3, inPath);
+		FileOutputFormat.setOutputPath(job3, hybridOut);
+		
+		return job3.waitForCompletion(true) ? 0 : 1; 
 	}
 }

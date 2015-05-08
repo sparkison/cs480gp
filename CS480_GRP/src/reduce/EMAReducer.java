@@ -19,6 +19,8 @@ public class EMAReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Text>
 	private Text newKey = new Text(); 
 	private Text valout = new Text(); 
 
+	private String prevTicker = ""; 
+
 	private final double startCapitalDefault = 5000.00; 
 
 	private final int pricesSize = 4;
@@ -81,27 +83,56 @@ public class EMAReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Text>
 
 		ticker = key.getTicker().toString().trim(); 
 
-		results.clear();
 
-		for(int i = 0; i < posSize * 3; i++){
-			posEntered[i] = false; 
-			entrySignal[i] = false; 
-			exitSignal[i] = false; 
-			entryPrice[i] = 0.0;
-			exitPrice[i] = 0.0; 
-			shares[i] = 0; 
-			stopPrice[i] = 0.0; 
-			startCapital[i] = startCapitalDefault;
-			realizedGains[i] = 0.0; 
-			entryCapital[i] = 0.0;
-			exitCapital[i] = 0.0; 
+		if(!key.getTicker().toString().trim().equals(prevTicker)){
+
+
+			for(String r: results.keySet()){
+				int posIndex = -1;
+				try{
+					posIndex = Integer.parseInt(r.substring(5, r.indexOf(":")).trim());
+					if(!lineBuilder[posIndex].equals("")){
+						exitPosition(0,0,0,posIndex,context); 
+					}
+					for(String l: results.get(r)){
+						context.write(new Text(r), new Text(l));
+					}
+				} catch(Exception e) {
+					System.err.println("\n\n**********************************************");
+					System.err.println("Error parsing stock data");
+					System.err.println("Line position length: " + lineBuilder.length);
+					System.err.println("Enter position index: " + posIndex);
+					e.printStackTrace();
+					System.err.println("**********************************************\n\n");
+					// System.exit(0);
+				}
+
+			}
+
+
+			results.clear();
+
+			for(int i = 0; i < posSize * 3; i++){
+				posEntered[i] = false; 
+				entrySignal[i] = false; 
+				exitSignal[i] = false; 
+				entryPrice[i] = 0.0;
+				exitPrice[i] = 0.0; 
+				shares[i] = 0; 
+				stopPrice[i] = 0.0; 
+				startCapital[i] = startCapitalDefault;
+				realizedGains[i] = 0.0; 
+				entryCapital[i] = 0.0;
+				exitCapital[i] = 0.0; 
+			}
+			for(int i = 0; i < emaSize; i++){
+				thisEMA[i] = 0.0;
+				prevEMA[i] = 0.0; 
+			}
+			for(int i = 0; i < nSize; i++) nVals[i] = 0.0; 
+			for(int i = 0; i < pricesSize; i++) prices[i] = 0.0; 
+
 		}
-		for(int i = 0; i < emaSize; i++){
-			thisEMA[i] = 0.0;
-			prevEMA[i] = 0.0; 
-		}
-		for(int i = 0; i < nSize; i++) nVals[i] = 0.0; 
-		for(int i = 0; i < pricesSize; i++) prices[i] = 0.0; 
 
 
 		for(DayStatsWritable val: values){
@@ -166,28 +197,9 @@ public class EMAReducer extends Reducer<CompositeKey,DayStatsWritable,Text,Text>
 			prevEMA[ema150] = thisEMA[ema150]; 
 			prevEMA[ema200] = thisEMA[ema200];
 		}
+		
+		prevTicker = key.getTicker().toString().trim(); 
 
-		for(String r: results.keySet()){
-			int posIndex = -1;
-			try{
-				posIndex = Integer.parseInt(r.substring(5, r.indexOf(":")).trim());
-				if(!lineBuilder[posIndex].equals("")){
-					exitPosition(0,0,0,posIndex,context); 
-				}
-				for(String l: results.get(r)){
-					context.write(new Text(r), new Text(l));
-				}
-			} catch(Exception e) {
-				System.err.println("\n\n**********************************************");
-				System.err.println("Error parsing stock data");
-				System.err.println("Line position length: " + lineBuilder.length);
-				System.err.println("Enter position index: " + posIndex);
-				e.printStackTrace();
-				System.err.println("**********************************************\n\n");
-				// System.exit(0);
-			}
-
-		}
 	}
 
 	public void analyzeTradeDate(int shortEMA, int longEMA, int nVal, int posIndex, Context context){
